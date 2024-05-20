@@ -10,7 +10,7 @@ flask-sqlalchemy = "*"
 flask-migrate = "*"
 importlib-metadata = "6.0.0"
 importlib-resources = "5.10.0"
-faker = "14.2.0"
+faker = "*"
 sqlalchemy-serializer = "*"
 flask-cors = "*"
 
