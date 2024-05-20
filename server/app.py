@@ -22,7 +22,10 @@ db.init_app(app)
 def index():
     return "Hello world"
 
-# write your routes here!
+
+# write your routes here! 
+# all routes should start with '/api' to account for the proxy
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
