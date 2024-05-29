@@ -13,6 +13,8 @@ importlib-resources = "5.10.0"
 faker = "*"
 sqlalchemy-serializer = "*"
 flask-cors = "*"
+python-dotenv = "*"
+flask-bcrypt = "*"
 
 [dev-packages]
 ipdb = "*"
