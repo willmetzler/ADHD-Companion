@@ -14,6 +14,18 @@ Add your collaborators under `Settings > Collaborators` on github.
 
 ## Getting Started - Flask
 
+Create a `.env` file and create a line similar to this:
+
+```
+SECRET_KEY=abcdef1234567890
+```
+
+You can generate a proper secret key inside a python repl like so:
+
+```
+import secrets; secrets.token_hex(16)
+```
+
 Inside the project run these commands:
 
 ```
