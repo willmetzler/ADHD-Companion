@@ -1,11 +1,14 @@
-function App() {
+import { Outlet } from 'react-router-dom'
+import React from "react";
+import Sidenav from './Sidenav';
+import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 
+function App() {
   return (
     <div>
-      <h1>Hello World</h1>
+      <Sidenav/>
     </div>
   )
-
 }
 
-export default App
+export default App;

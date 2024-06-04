@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './components/App.jsx'
+import Home from './components/Home.jsx'
 import Profile from './components/Profile.jsx'
 import Calendar from './components/Calendar.jsx'
 import Diary from './components/Diary.jsx'

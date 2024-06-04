@@ -30,3 +30,21 @@ class Journal(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     mood = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
+
+class Diary(db.Model, SerializerMixin):
+    __tablename__ = 'diary_table'
+
+    id = db.Column(db.Integer, primary_key=True)
+    header = db.Column(db.String)
+    content = db.Column(db.String)
+    journal_id = db.Column(db.Integer, db.ForeignKey('journal_table.id'))
+
+class Medications(db.Model, SerializerMixin):
+    __tablename__ = 'medications_table'
+
+    id = db.Column(db.Integer, primary_key=True)
+    drug_name = db.Column(db.String, nullable=False)
+    dosage = db.Column(db.Integer, nullable=False)
+    prescriber = db.Column(db.String, nullable=False)
+    renew_date = db.Column(db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
