@@ -1,4 +1,27 @@
 body {
-  margin: 0;
-  padding: 1em;
+  display: flex;
+  margin: 0; 
+  padding: 0;
 }
+
+#root {
+  flex: 1;
+}
+
+.app-container {
+  display: flex;
+  height: 100vh; 
+  justify-content: center; 
+}
+
+.sidebar {
+  flex: 0 0 4em; 
+  background-color: #f0f0f0; 
+}
+
+.main-content {
+  flex: 1; 
+  padding: 1em; 
+  justify-content: center;
+}
+
