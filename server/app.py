@@ -19,6 +19,8 @@ bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 db.init_app(app)
 
+
+#USER LOGIN/SIGNUP ETC..
 @app.get('/api/users')
 def index():
     return [u.to_dict() for u in User.query.all()], 200
@@ -68,6 +70,48 @@ def login():
 def logout():
     session.pop('user_id')
     return {}, 204
+
+
+
+#JOURNALS
+
+@app.get('/api/journals')
+def get_journals():
+    user_id = session.get('user_id')
+    if user_id:
+        journals = Journal.query.filter_by(user_id=user_id).all()
+        return jsonify([journal.to_dict() for journal in journals]), 200
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.post('/api/journals')
+def create_journal():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            new_journal = Journal(
+                journal_header=request.json['journal_header'],
+                journal_text=request.json['journal_text'],
+                mood=request.json['mood'],
+                user_id=user_id
+            )
+            db.session.add(new_journal)
+            db.session.commit()
+            return jsonify(new_journal.to_dict()), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.get('/api/mood-ratings')
+def get_mood_ratings():
+    user_id = session.get('user_id')
+    if user_id:
+        journals = Journal.query.filter_by(user_id=user_id).all()
+        mood_ratings = [{'created_at': journal.created_at, 'mood': journal.mood} for journal in journals]
+        return jsonify(mood_ratings), 200
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
