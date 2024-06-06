@@ -7,18 +7,6 @@ function Calendar() {
     const [events, setEvents] = useState([]);
     const calendarRef = useRef(null);
 
-    // Function to group mood ratings by date
-    const groupByDate = (data) => {
-        const groupedData = {};
-        data.forEach(entry => {
-            const date = new Date(entry.created_at).toISOString().split('T')[0];
-            if (!groupedData[date] || entry.created_at > groupedData[date].created_at) {
-                groupedData[date] = entry;
-            }
-        });
-        return groupedData;
-    };
-
     useEffect(() => {
         fetch('/api/mood-ratings')
             .then(response => {
@@ -28,24 +16,31 @@ function Calendar() {
                 return response.json();
             })
             .then(data => {
-                const groupedData = groupByDate(data); // Group mood ratings by date
-                console.log('Grouped mood ratings:', groupedData);
-            
-                // Process grouped data to create events with the most recent mood rating for each date
-                const eventsData = Object.entries(groupedData).map(([date, mood]) => ({
-                    title: '', // No need for a title
-                    start: date, // Start date is the date itself
-                    allDay: true, // Event spans all day
-                    backgroundColor: getBackgroundColor(mood.mood), // Set background color based on most recent mood rating
+                const eventsData = data.map(entry => ({
+                    start: new Date(entry.created_at).toISOString().split('T')[0], // Format the date as YYYY-MM-DD
+                    mood: entry.mood, // Assuming mood is the mood rating value
                 }));
-                console.log('Processed events:', eventsData);
-            
                 setEvents(eventsData);
             })
             .catch(error => {
                 console.error('Error fetching mood ratings:', error);
             });
     }, []);
+    
+    useEffect(() => {
+        if (calendarRef.current) {
+            const api = calendarRef.current.getApi();
+            const eventSources = events.map(event => ({
+                start: event.start,
+                end: event.start, // End date same as start to create all-day event
+                display: 'background',
+                color: getBackgroundColor(event.mood), // Set background color based on mood rating
+            }));
+            api.removeAllEventSources(); // Clear existing event sources
+            api.addEventSource(eventSources); // Add new event sources
+        }
+    }, [events]);
+    
 
     const getBackgroundColor = moodRating => {
         // Define your logic to map mood ratings to background colors here
@@ -53,15 +48,15 @@ function Calendar() {
         // Example: Mapping mood ratings 1-5 to predefined colors
         switch (moodRating) {
             case 1:
-                return 'darkred';
+                return '#e22a03'; // darkred
             case 2:
-                return 'lightcoral';
+                return '#ee816a'; // pale red
             case 3:
-                return 'yellow';
+                return '#ece13b'; // yellow
             case 4:
-                return 'lightgreen';
+                return '#afe48e'; // pale green
             case 5:
-                return 'darkgreen';
+                return '#26e616'; // bright green
             default:
                 return ''; // Return empty string for undefined mood ratings
         }
@@ -73,7 +68,6 @@ function Calendar() {
                 ref={calendarRef} // Set the reference to FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
-                events={events}
                 height="auto"
             />
         </div>

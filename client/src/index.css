@@ -3,6 +3,9 @@ body {
   margin: 0; 
   padding: 0;
 }
+.fc-day-today {
+  background-color: transparent !important;
+}
 
 #root {
   flex: 1;

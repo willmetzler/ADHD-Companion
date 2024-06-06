@@ -1,15 +1,30 @@
-#!/usr/bin/env python3
-
-from app import app
-from models import db # models go here
+import random
+from datetime import datetime, timedelta
 from faker import Faker
+from app import db, User, Journal
 
-faker = Faker()
+fake = Faker()
+
+def generate_mood():
+    return random.randint(1, 5)
+
+def populate_mood_values():
+    users = User.query.all()
+
+    for user in users:
+        for i in range(15):
+            date = datetime.now() + timedelta(days=i)
+            mood = generate_mood()
+            journal = Journal(
+                journal_header=fake.sentence(),
+                journal_text=fake.paragraph(),
+                created_at=date,
+                mood=mood,
+                user=user
+            )
+            db.session.add(journal)
+
+    db.session.commit()
 
 if __name__ == '__main__':
-    with app.app_context():
-        print("Seeding database...")
-
-        # write your seeds here!
-
-        print("Seeding complete!")
+    populate_mood_values()
