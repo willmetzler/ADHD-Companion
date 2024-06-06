@@ -74,7 +74,6 @@ def logout():
 
 
 #JOURNALS
-
 @app.get('/api/journals')
 def get_journals():
     user_id = session.get('user_id')
@@ -112,6 +111,41 @@ def get_mood_ratings():
         return jsonify(mood_ratings), 200
     else:
         return jsonify({'error': 'User not logged in'}), 401
+    
+@app.post('/api/mood-ratings')
+def submit_mood_rating():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            new_mood = request.json['mood']
+            if new_mood not in range(1, 6):
+                return jsonify({'error': 'Invalid mood rating'}), 400
+            new_journal = Journal(journal_header='Mood Rating', mood=new_mood, user_id=user_id)
+            db.session.add(new_journal)
+            db.session.commit()
+            return jsonify({'message': 'Mood rating submitted successfully'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.post('/api/journal-entries')
+def submit_journal_entry():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            journal_header = request.json.get('journal_header', 'Journal Entry')
+            journal_text = request.json.get('journal_text', '')
+            new_journal = Journal(journal_header=journal_header, journal_text=journal_text, user_id=user_id)
+            db.session.add(new_journal)
+            db.session.commit()
+            return jsonify({'message': 'Journal entry submitted successfully'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

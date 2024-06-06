@@ -1,14 +1,25 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-
 function Calendar() {
     const [events, setEvents] = useState([]);
+    const calendarRef = useRef(null);
+
+    // Function to group mood ratings by date
+    const groupByDate = (data) => {
+        const groupedData = {};
+        data.forEach(entry => {
+            const date = new Date(entry.created_at).toISOString().split('T')[0];
+            if (!groupedData[date] || entry.created_at > groupedData[date].created_at) {
+                groupedData[date] = entry;
+            }
+        });
+        return groupedData;
+    };
 
     useEffect(() => {
-        // Fetch mood rating data from your backend API
         fetch('/api/mood-ratings')
             .then(response => {
                 if (!response.ok) {
@@ -17,12 +28,18 @@ function Calendar() {
                 return response.json();
             })
             .then(data => {
-                // Transform mood rating data into FullCalendar event format
-                const eventsData = data.map(entry => ({
+                const groupedData = groupByDate(data); // Group mood ratings by date
+                console.log('Grouped mood ratings:', groupedData);
+            
+                // Process grouped data to create events with the most recent mood rating for each date
+                const eventsData = Object.entries(groupedData).map(([date, mood]) => ({
                     title: '', // No need for a title
-                    start: entry.created_at, // Assuming created_at is the date of the mood rating
-                    mood: entry.mood, // Assuming mood is the mood rating value
+                    start: date, // Start date is the date itself
+                    allDay: true, // Event spans all day
+                    backgroundColor: getBackgroundColor(mood.mood), // Set background color based on most recent mood rating
                 }));
+                console.log('Processed events:', eventsData);
+            
                 setEvents(eventsData);
             })
             .catch(error => {
@@ -30,38 +47,34 @@ function Calendar() {
             });
     }, []);
 
-    const eventContent = ({ event, el }) => {
-        // Customize event rendering based on mood rating
-        const moodRating = event.extendedProps.mood;
+    const getBackgroundColor = moodRating => {
+        // Define your logic to map mood ratings to background colors here
+    
+        // Example: Mapping mood ratings 1-5 to predefined colors
         switch (moodRating) {
             case 1:
-                el.style.backgroundColor = 'darkred';
-                break;
+                return 'darkred';
             case 2:
-                el.style.backgroundColor = 'lightcoral';
-                break;
+                return 'lightcoral';
             case 3:
-                el.style.backgroundColor = 'yellow';
-                break;
+                return 'yellow';
             case 4:
-                el.style.backgroundColor = 'lightgreen';
-                break;
+                return 'lightgreen';
             case 5:
-                el.style.backgroundColor = 'darkgreen';
-                break;
+                return 'darkgreen';
             default:
-                break;
+                return ''; // Return empty string for undefined mood ratings
         }
     };
-
+    
     return (
         <div className="calendar-container">
             <FullCalendar
+                ref={calendarRef} // Set the reference to FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
-                eventContent={eventContent}
                 events={events}
-                height= "auto"
+                height="auto"
             />
         </div>
     );

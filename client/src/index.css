@@ -34,3 +34,8 @@ body {
 .mood-button {
   scale: 150%;
 }
+
+.journal-text-field {
+  width: 85%;
+  height: 18vh
+}
