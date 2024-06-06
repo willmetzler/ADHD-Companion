@@ -2,9 +2,7 @@ import { useState } from 'react'
 import {useOutletContext} from 'react-router-dom'
 import { useNavigate } from 'react-router-dom';
 
-function Login() {
-
-    const {setCurrentUser} = useOutletContext()
+function Login({setCurrentUser}) {
 
     const [user, setUser] = useState('')
     const [password, setPassword] = useState('')
@@ -24,7 +22,7 @@ function Login() {
         if (res.ok) {
             res.json().then(user => {
             setCurrentUser(user);
-            navigate('/'); 
+            navigate('/home'); 
             });
         } else {
             alert('Invalid username or password');
@@ -36,20 +34,22 @@ function Login() {
     <div className="login-container">
         <form className='user-form' onSubmit={handleSubmit}>
 
-            <h2>Login</h2>
+            <h2>Log In</h2>
 
             <input type="text"
             onChange={e => setUser(e.target.value)}
             value={user}
-            placeholder='username'
+            placeholder='Username'
             />
-
+            <br></br>
+            <br></br>
             <input type="password"
             onChange={e => setPassword(e.target.value)}
             value={password}
-            placeholder='password'
+            placeholder='Password'
             />
-
+            <br></br>
+            <br></br>
             <input type="submit"
             value='Login'
             />

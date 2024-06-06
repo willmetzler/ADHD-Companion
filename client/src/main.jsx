@@ -7,7 +7,9 @@ import Calendar from './components/Calendar.jsx';
 import Diary from './components/Diary.jsx';
 import Medications from './components/Medications.jsx';
 import Signup from './components/Signup.jsx';
-import Sidenav from './components/Sidenav.jsx'; 
+import Login from './components/Login.jsx';
+import Userpanel from './components/Userpanel.jsx';
+import Sidenav from './components/Sidenav.jsx';
 import './index.css';
 
 import { createBrowserRouter, RouterProvider, Outlet, Route } from 'react-router-dom';
@@ -42,6 +44,14 @@ const routes = [
             {
                 path: 'signup',
                 element: <Signup />
+            },
+            {
+                path: 'login',
+                element: <Login />
+            },
+            {
+                path: 'userpanel',
+                element: <Userpanel />
             }
         ]
     }

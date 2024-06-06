@@ -53,5 +53,21 @@ def get_session():
             return user.to_dict(), 200
     return {}, 204
 
+@app.post('/api/login')
+def login():
+    username = request.json.get('user')
+    password = request.json.get('password')
+    user = User.query.filter_by(username=username).first()
+    if user and bcrypt.check_password_hash(user._hashed_password, password):
+        session['user_id'] = user.id
+        return user.to_dict(), 201
+    else:
+        return {'error': 'Username or password was invalid'}, 401
+
+@app.delete('/api/logout')
+def logout():
+    session.pop('user_id')
+    return {}, 204
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

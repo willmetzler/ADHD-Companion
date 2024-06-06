@@ -33,7 +33,7 @@ class Journal(db.Model, SerializerMixin):
     mood = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
 
-    user = db.Relationship('User', back_populates='journals')
+    user = db.relationship('User', back_populates='journals')
 
 class Diary(db.Model, SerializerMixin):
     __tablename__ = 'diary_table'

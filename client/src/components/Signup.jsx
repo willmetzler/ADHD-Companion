@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom';
 
-function Signup() {
-
-    const { setCurrentUser } = useOutletContext()
+function Signup({setCurrentUser}) {
 
     const [username, setUsername] = useState('')
     const [_hashed_password, setPassword] = useState('')
