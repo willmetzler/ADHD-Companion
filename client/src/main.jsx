@@ -6,6 +6,7 @@ import Profile from './components/Profile.jsx';
 import Calendar from './components/Calendar.jsx';
 import Diary from './components/Diary.jsx';
 import Medications from './components/Medications.jsx';
+import Signup from './components/Signup.jsx';
 import Sidenav from './components/Sidenav.jsx'; 
 import './index.css';
 
@@ -37,6 +38,10 @@ const routes = [
             {
                 path: 'medications',
                 element: <Medications />
+            },
+            {
+                path: 'signup',
+                element: <Signup />
             }
         ]
     }

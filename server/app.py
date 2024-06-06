@@ -15,21 +15,43 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.json.compact = False
 
 CORS(app)
-
 bcrypt = Bcrypt(app)
-
 migrate = Migrate(app, db)
-
 db.init_app(app)
 
-@app.get('/')
+@app.get('/api/users')
 def index():
-    return "Hello world"
+    return [u.to_dict() for u in User.query.all()], 200
 
+@app.get('/api/users/<int:id>')
+def users_by_id(id):
+    user = User.query.where(User.id == id).first()
+    if user:
+        return user.to_dict(), 200
+    else:
+        return {'error': 'Not found'}, 404
 
-# write your routes here! 
-# all routes should start with '/api' to account for the proxy
-
+@app.post('/api/users')
+def create_user():
+    try:
+        new_user = User(username=request.json['username'], first_name=request.json['first_name'], last_name=request.json['last_name'])
+        # using the bcrypt library to hash the password
+        new_user._hashed_password = bcrypt.generate_password_hash(request.json['_hashed_password']).decode('utf-8')
+        db.session.add(new_user)
+        db.session.commit()
+        session['user_id'] = new_user.id  # Store the user ID in the session
+        return new_user.to_dict(), 201
+    except Exception as e:
+        return { 'error': str(e) }, 406
+    
+@app.get('/api/get-session')
+def get_session():
+    user_id = session.get('user_id')  # Retrieve the user ID from the session
+    if user_id:
+        user = User.query.get(user_id)
+        if user:
+            return user.to_dict(), 200
+    return {}, 204
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

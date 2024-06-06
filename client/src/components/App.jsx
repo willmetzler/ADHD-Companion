@@ -1,9 +1,12 @@
 import { Outlet } from "react-router-dom";
-import React from "react";
+import React, {useState, useEffect} from "react";
 import Sidenav from './Sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 
 function App() {
+
+  const [currentUser, setCurrentUser] = useState(null);
+
   return (
     <div className="app-container">
 
@@ -12,9 +15,9 @@ function App() {
       </div>
 
       <div className="main-content">
-        <Outlet />
+        <Outlet context={{currentUser, setCurrentUser}}/>
       </div>
-      
+
     </div>
   )
 }

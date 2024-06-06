@@ -21,6 +21,8 @@ class User(db.Model, SerializerMixin):
     _hashed_password = db.Column(db.String)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
+    journals = db.relationship('Journal', back_populates='user')
+
 class Journal(db.Model, SerializerMixin):
     __tablename__ = 'journal_table'
 
@@ -30,6 +32,8 @@ class Journal(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     mood = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
+
+    user = db.Relationship('User', back_populates='journals')
 
 class Diary(db.Model, SerializerMixin):
     __tablename__ = 'diary_table'

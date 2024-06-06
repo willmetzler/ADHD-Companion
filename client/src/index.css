@@ -25,3 +25,12 @@ body {
   justify-content: center;
 }
 
+.mood-buttons {
+  display: flex;
+  justify-content: center;
+  justify-content:space-around;
+}
+
+.mood-button {
+  scale: 150%;
+}
