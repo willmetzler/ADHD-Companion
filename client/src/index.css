@@ -42,3 +42,50 @@ body {
   width: 85%;
   height: 18vh
 }
+
+.diary-container {
+  height: calc(100vh - 6em);
+  overflow-y: auto;
+}
+
+.diary-content {
+  border: 2px, solid, black;
+  margin-bottom: 1em;
+  padding-left: 1em;
+}
+
+.key-container {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+#key1 {
+  background-color: #e22a03;
+  border: solid;
+  height: 1em;
+  width: 1em;
+}
+#key2 {
+  background-color: #ef9c0e;
+  border: solid;
+  height: 1em;
+  width: 1em;
+}
+#key3 {
+  background-color: #ece13b;
+  border: solid;
+  height: 1em;
+  width: 1em;
+}
+#key4 {
+  background-color: #afe48e;
+  border: solid;
+  height: 1em;
+  width: 1em;
+}
+#key5 {
+  background-color: #26e616;
+  border: solid;
+  height: 1em;
+  width: 1em;
+}

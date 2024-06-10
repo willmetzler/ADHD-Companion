@@ -23,7 +23,7 @@ function Signup({setCurrentUser}) {
             response.json()
             .then( newUser => {
             setCurrentUser(newUser) 
-            navigate('/');
+            navigate('/home');
             });
         } else {
             alert("Account creation failed")

@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Home() {
     const [mood, setMood] = useState(3); 
+    const [journalHeader, setJournalHeader] = useState('');
     const [journalText, setJournalText] = useState('');
 
     const handleMoodChange = (newMood) => {
         setMood(newMood);
+    };
+
+    const handleJournalHeaderChange = (event) => {
+        setJournalHeader(event.target.value);
     };
 
     const handleJournalTextChange = (event) => {
@@ -35,7 +40,7 @@ function Home() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ journal_header: 'Daily Entry', journal_text }),
+            body: JSON.stringify({ journal_header: journalHeader, journal_text: journalText,}), // Include mood property
         })
             .then((response) => response.json())
             .then((data) => {
@@ -45,6 +50,7 @@ function Home() {
                 console.error('Error submitting journal entry:', error);
             });
     };
+    
 
     return (
         <div className='home-container'>
@@ -67,6 +73,14 @@ function Home() {
             <br></br>
             <div className='journal-container'>
                 <h2>Today's thoughts...</h2>
+                <input
+                    type='text'
+                    value={journalHeader}
+                    onChange={handleJournalHeaderChange}
+                    placeholder='Journal Entry Header'
+                />
+                <br></br>
+                <br></br>
                 <textarea
                     className='journal-text-field'
                     value={journalText}

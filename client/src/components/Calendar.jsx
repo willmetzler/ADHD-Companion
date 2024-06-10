@@ -18,7 +18,7 @@ function Calendar() {
             .then(data => {
                 const eventsData = data.map(entry => ({
                     start: new Date(entry.created_at).toISOString().split('T')[0], // Format the date as YYYY-MM-DD
-                    mood: entry.mood, // Assuming mood is the mood rating value
+                    mood: entry.mood_rating, // Assuming mood_rating is the mood rating value
                 }));
                 setEvents(eventsData);
             })
@@ -26,6 +26,7 @@ function Calendar() {
                 console.error('Error fetching mood ratings:', error);
             });
     }, []);
+    
     
     useEffect(() => {
         if (calendarRef.current) {
@@ -43,14 +44,11 @@ function Calendar() {
     
 
     const getBackgroundColor = moodRating => {
-        // Define your logic to map mood ratings to background colors here
-    
-        // Example: Mapping mood ratings 1-5 to predefined colors
         switch (moodRating) {
             case 1:
                 return '#e22a03'; // darkred
             case 2:
-                return '#ee816a'; // pale red
+                return '#ef9c0e'; // orange
             case 3:
                 return '#ece13b'; // yellow
             case 4:
@@ -65,11 +63,21 @@ function Calendar() {
     return (
         <div className="calendar-container">
             <FullCalendar
-                ref={calendarRef} // Set the reference to FullCalendar
+                ref={calendarRef}
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 height="auto"
             />
+            <div>
+                <p>Key:</p>
+                    <div className='key-container'>
+                        1<div id='key1'></div> 
+                        2<div id='key2'></div>
+                        3<div id='key3'></div>
+                        4<div id='key4'></div>
+                        5<div id='key5'></div>
+                    </div>
+            </div>
         </div>
     );
 }
