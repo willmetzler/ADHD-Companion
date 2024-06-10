@@ -157,6 +157,41 @@ def submit_journal_entry():
         return jsonify({'error': 'User not logged in'}), 401
 
 
+@app.put('/api/journals/<int:id>')
+def edit_journal_entry(id):
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            journal_entry = Journal.query.filter_by(id=id, user_id=user_id).first()
+            if journal_entry:
+                journal_entry.journal_header = request.json.get('journal_header', journal_entry.journal_header)
+                journal_entry.journal_text = request.json.get('journal_text', journal_entry.journal_text)
+                db.session.commit()
+                return jsonify({'message': 'Journal entry updated successfully'}), 200
+            else:
+                return jsonify({'error': 'Journal entry not found'}), 404
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.delete('/api/journals/<int:id>')
+def delete_journal_entry(id):
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            journal_entry = Journal.query.filter_by(id=id, user_id=user_id).first()
+            if journal_entry:
+                db.session.delete(journal_entry)
+                db.session.commit()
+                return jsonify({'message': 'Journal entry deleted successfully'}), 200
+            else:
+                return jsonify({'error': 'Journal entry not found'}), 404
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

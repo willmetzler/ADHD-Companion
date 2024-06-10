@@ -45,6 +45,8 @@ function Home() {
             .then((response) => response.json())
             .then((data) => {
                 console.log('Journal entry submitted:', data);
+                setJournalHeader('');
+                setJournalText('');
             })
             .catch((error) => {
                 console.error('Error submitting journal entry:', error);
