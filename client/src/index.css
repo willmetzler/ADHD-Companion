@@ -91,3 +91,9 @@ body {
   height: 1em;
   width: 1em;
 }
+
+.fc-event .fa-pencil {
+  position: absolute;
+  bottom: 0.25em;
+  right: 0.25em;
+}

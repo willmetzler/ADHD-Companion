@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
 
+function getMonthName(monthIndex) {
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    return monthNames[monthIndex];
+}
+
 function Diary() {
     const [journalEntries, setJournalEntries] = useState([]);
     const [selectedDate, setSelectedDate] = useState('');
     const [editMode, setEditMode] = useState({});
     const [editedContent, setEditedContent] = useState({});
+
+    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); 
+    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+    const [filteredEntries, setFilteredEntries] = useState([]);
 
     useEffect(() => {
         fetch('/api/journals')
@@ -23,6 +36,16 @@ function Diary() {
             });
     }, []);
 
+    useEffect(() => {
+        // Filter entries for the current month
+        const filteredEntries = journalEntries.filter(entry => {
+            const entryMonth = new Date(entry.created_at).getMonth();
+            return entryMonth === currentMonth;
+        });
+        setFilteredEntries(filteredEntries);
+    }, [currentMonth, journalEntries]);
+
+
     const formatDateTime = (dateTimeString) => {
         const options = {
             year: 'numeric',
@@ -37,7 +60,11 @@ function Diary() {
     };
 
     const handleDateChange = (event) => {
-        setSelectedDate(event.target.value);
+        const selectedDate = event.target.value;
+        setSelectedDate(selectedDate);
+        const date = new Date(selectedDate);
+        setCurrentMonth(date.getMonth());
+        setCurrentYear(date.getFullYear());
     };
 
     const handleEdit = (entryId, entry) => {
@@ -142,18 +169,50 @@ function Diary() {
         }
     };
 
-    const filteredEntries = selectedDate
-        ? journalEntries.filter(entry => {
-            const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
-            return entryDate === selectedDate;
-        })
-        : journalEntries;
+    const handleNextMonth = () => {
+        setCurrentMonth(prevMonth => {
+            const nextMonth = prevMonth === 11 ? 0 : prevMonth + 1;
+            const nextYear = prevMonth === 11 ? currentYear + 1 : currentYear;
+            setCurrentYear(nextYear);
+            return nextMonth;
+        });
+    };
+    
+    const handlePrevMonth = () => {
+        setCurrentMonth(prevMonth => {
+            const newPrevMonth = prevMonth === 0 ? 11 : prevMonth - 1;
+            const prevYear = prevMonth === 0 ? currentYear - 1 : currentYear;
+            setCurrentYear(prevYear);
+            return newPrevMonth;
+        });
+    };
 
-        const reversedEntries = [...filteredEntries].reverse();
+    // Handler for navigating to the current month
+    const handleToday = () => {
+        setCurrentMonth(new Date().getMonth()); // Set current month
+        setSelectedDate(''); // Clear selected date
+    };
+
+
+    const [selectedYear, setSelectedYear] = useState(
+        selectedDate
+            ? new Date(selectedDate).getFullYear()
+            : journalEntries.length > 0
+            ? new Date(journalEntries[0].created_at).getFullYear()
+            : new Date().getFullYear()
+    );
+
+    const reversedEntries = [...filteredEntries].reverse();
 
         return (
             <div>
                 <h1>Diary</h1>
+                <h3>{`${getMonthName(currentMonth)} ${currentYear}`}</h3>
+                <div>
+                    <button onClick={handlePrevMonth}>Previous Month</button>
+                    <button onClick={handleNextMonth}>Next Month</button>
+                    <button onClick={handleToday}>Today</button>
+                </div>
                 <div>
                     <label htmlFor="datePicker">Filter by Date:</label>
                     <input type="date" id="datePicker" value={selectedDate} onChange={handleDateChange} />
@@ -165,7 +224,7 @@ function Diary() {
                             {editMode[entry.id] ? (
                                 <div>
                                     <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
-                                    <textarea value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
+                                    <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
                                     <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
                                     <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
                                 </div>
@@ -183,6 +242,5 @@ function Diary() {
                 </div>
             </div>
         );
-}
-
+    }
 export default Diary;
