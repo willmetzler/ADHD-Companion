@@ -7,7 +7,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
 
-from models import db, User, Journal, Mood
+from models import db, User, Journal, Mood, Medications
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -191,6 +191,41 @@ def delete_journal_entry(id):
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'User not logged in'}), 401
+    
+
+
+# MEDICATIONS
+
+@app.get('/api/medications')
+def get_medications():
+    user_id = session.get('user_id')
+    if user_id:
+        medications = Medications.query.filter_by(user_id=user_id).all()
+        return jsonify([medication.to_dict() for medication in medications]), 200
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.post('/api/medications')
+def add_medication():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            new_medication = Medications(
+                drug_name=request.json['drug_name'],
+                dosage=request.json['dosage'],
+                prescriber=request.json['prescriber'],
+                renew_date=request.json['renew_date'],
+                user_id=user_id
+            )
+            db.session.add(new_medication)
+            db.session.commit()
+            return jsonify(new_medication.to_dict()), 201
+        except Exception as e:
+            return jsonify({'error': 'Failed to add medication', 'details': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+
 
 
 if __name__ == '__main__':
