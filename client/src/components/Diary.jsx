@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
-
-function getMonthName(monthIndex) {
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    return monthNames[monthIndex];
-}
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleRight, faAngleLeft } from '@fortawesome/free-solid-svg-icons';
 
 function Diary() {
     const [journalEntries, setJournalEntries] = useState([]);
-    const [selectedDate, setSelectedDate] = useState('');
     const [editMode, setEditMode] = useState({});
     const [editedContent, setEditedContent] = useState({});
-
-    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth()); 
-    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
     const [filteredEntries, setFilteredEntries] = useState([]);
 
@@ -37,14 +29,22 @@ function Diary() {
     }, []);
 
     useEffect(() => {
-        // Filter entries for the current month
+        // Filter entries based on selected month and year
         const filteredEntries = journalEntries.filter(entry => {
-            const entryMonth = new Date(entry.created_at).getMonth();
-            return entryMonth === currentMonth;
+            const entryDate = new Date(entry.created_at);
+            const entryYear = entryDate.getFullYear();
+            const entryMonth = entryDate.getMonth();
+            return entryYear === selectedYear && entryMonth === currentMonth;
         });
+        // Sort filtered entries by date in descending order
+        filteredEntries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setFilteredEntries(filteredEntries);
-    }, [currentMonth, journalEntries]);
+    }, [journalEntries, currentMonth, selectedYear]);
 
+    const getMonthName = (monthIndex) => {
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return months[monthIndex];
+    };
 
     const formatDateTime = (dateTimeString) => {
         const options = {
@@ -54,18 +54,11 @@ function Diary() {
             hour: 'numeric',
             minute: 'numeric',
             hour12: true,
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone // Use user's time zone
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
         return new Intl.DateTimeFormat('en-US', options).format(new Date(dateTimeString));
     };
-
-    const handleDateChange = (event) => {
-        const selectedDate = event.target.value;
-        setSelectedDate(selectedDate);
-        const date = new Date(selectedDate);
-        setCurrentMonth(date.getMonth());
-        setCurrentYear(date.getFullYear());
-    };
+    
 
     const handleEdit = (entryId, entry) => {
         setEditMode(prevState => ({
@@ -98,7 +91,6 @@ function Diary() {
                 throw new Error('Failed to save edited entry');
             }
     
-            // Update the journal entries after successful update
             const updatedEntries = [...journalEntries];
             const updatedEntryIndex = updatedEntries.findIndex(entry => entry.id === entryId);
             if (updatedEntryIndex !== -1) {
@@ -113,13 +105,10 @@ function Diary() {
             }));
         } catch (error) {
             console.error('Error saving edited entry:', error);
-            // Handle error state or display error message to the user
         }
     };
     
-
     const handleCancelEdit = (entryId) => {
-        // Cancel edit mode and reset edited content
         setEditMode(prevState => ({
             ...prevState,
             [entryId]: false
@@ -160,87 +149,72 @@ function Diary() {
                 throw new Error('Failed to delete entry');
             }
     
-            // Remove the deleted entry from the journal entries
             const updatedEntries = journalEntries.filter(entry => entry.id !== entryId);
             setJournalEntries(updatedEntries);
         } catch (error) {
             console.error('Error deleting entry:', error);
-            // Handle error state or display error message to the user
         }
     };
 
     const handleNextMonth = () => {
-        setCurrentMonth(prevMonth => {
-            const nextMonth = prevMonth === 11 ? 0 : prevMonth + 1;
-            const nextYear = prevMonth === 11 ? currentYear + 1 : currentYear;
-            setCurrentYear(nextYear);
+        setCurrentMonth(prevMonthIndex => {
+            const nextMonth = prevMonthIndex === 11 ? 0 : prevMonthIndex + 1;
+            const nextYear = prevMonthIndex === 11 ? selectedYear + 1 : selectedYear;
+            setSelectedYear(nextYear);
             return nextMonth;
         });
     };
     
     const handlePrevMonth = () => {
-        setCurrentMonth(prevMonth => {
-            const newPrevMonth = prevMonth === 0 ? 11 : prevMonth - 1;
-            const prevYear = prevMonth === 0 ? currentYear - 1 : currentYear;
-            setCurrentYear(prevYear);
-            return newPrevMonth;
+        setCurrentMonth(prevMonthIndex => {
+            const prevMonth = prevMonthIndex === 0 ? 11 : prevMonthIndex - 1;
+            const prevYear = prevMonthIndex === 0 ? selectedYear - 1 : selectedYear;
+            setSelectedYear(prevYear);
+            return prevMonth;
         });
     };
-
-    // Handler for navigating to the current month
+    
     const handleToday = () => {
-        setCurrentMonth(new Date().getMonth()); // Set current month
-        setSelectedDate(''); // Clear selected date
+        const today = new Date();
+        setCurrentMonth(today.getMonth());
+        setSelectedYear(today.getFullYear());
     };
 
-
-    const [selectedYear, setSelectedYear] = useState(
-        selectedDate
-            ? new Date(selectedDate).getFullYear()
-            : journalEntries.length > 0
-            ? new Date(journalEntries[0].created_at).getFullYear()
-            : new Date().getFullYear()
-    );
-
-    const reversedEntries = [...filteredEntries].reverse();
-
-        return (
-            <div>
-                <h1>Diary</h1>
-                <h3>{`${getMonthName(currentMonth)} ${currentYear}`}</h3>
-                <div>
-                    <button onClick={handlePrevMonth}>Previous Month</button>
-                    <button onClick={handleNextMonth}>Next Month</button>
-                    <button onClick={handleToday}>Today</button>
-                </div>
-                <div>
-                    <label htmlFor="datePicker">Filter by Date:</label>
-                    <input type="date" id="datePicker" value={selectedDate} onChange={handleDateChange} />
-                </div>
-                <br></br>
-                <div className='diary-container'>
-                    {reversedEntries.map(entry => (
-                        <div className="diary-content" key={entry.id}>
-                            {editMode[entry.id] ? (
-                                <div>
-                                    <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
-                                    <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
-                                    <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
-                                    <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
-                                </div>
-                            ) : (
-                                <React.Fragment>
-                                    <h3>{entry.journal_header}</h3>
-                                    <p>{entry.journal_text}</p>
-                                    <p>Posted: {formatDateTime(entry.created_at)}</p>
-                                    <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
-                                    <button onClick={() => handleDelete(entry.id)}>Delete</button>
-                                </React.Fragment>
-                            )}
-                        </div>
-                    ))}
-                </div>
+    return (
+        <div>
+            <h1>Diary</h1>
+            <h3>{`${getMonthName(currentMonth)} ${selectedYear}`}</h3>
+            <div className='diary-button-div'>
+                <button className='diary-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} style={{ fontSize: '1em' }} /></button>
+                <button className='diary-buttons' onClick={handleToday}>Current Month</button>
+                <button className='diary-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} style={{ fontSize: '1em' }} /></button>
             </div>
-        );
-    }
+            <br />
+            <div className='diary-container'>
+                {filteredEntries.map(entry => (
+                    <div className="diary-content" key={entry.id}>
+                        {editMode[entry.id] ? (
+                            <div>
+                                <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
+                                <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
+                                <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
+                                <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
+                            </div>
+                        ) : (
+                            <React.Fragment>
+                                <h3>{entry.journal_header}</h3>
+                                <p>{entry.journal_text}</p>
+                                <p>Posted: {formatDateTime(entry.created_at)}</p>
+                                <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
+                                &nbsp; 
+                                <button onClick={() => handleDelete(entry.id)}>Delete</button>
+                            </React.Fragment>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export default Diary;
