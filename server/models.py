@@ -49,14 +49,6 @@ class Journal(db.Model, SerializerMixin):
     mood = db.relationship('Mood', uselist=False, back_populates='journal')
     serialize_rules = ('-user.journals',)
 
-class Diary(db.Model, SerializerMixin):
-    __tablename__ = 'diary_table'
-
-    id = db.Column(db.Integer, primary_key=True)
-    header = db.Column(db.String)
-    content = db.Column(db.String)
-    journal_id = db.Column(db.Integer, db.ForeignKey('journal_table.id'))
-
 class Medications(db.Model, SerializerMixin):
     __tablename__ = 'medications_table'
 

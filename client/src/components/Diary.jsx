@@ -9,6 +9,8 @@ function Diary() {
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
+    const [moodRatings, setMoodRatings] = useState({});
+
     const [filteredEntries, setFilteredEntries] = useState([]);
 
     useEffect(() => {
@@ -25,6 +27,26 @@ function Diary() {
             })
             .catch(error => {
                 console.error('Error fetching journal entries:', error);
+            });
+
+        fetch('/api/mood-ratings')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to fetch mood ratings');
+                }
+            })
+            .then(data => {
+                const ratingsByDate = {};
+                data.forEach(entry => {
+                    const date = new Date(entry.created_at).toLocaleDateString();
+                    ratingsByDate[date] = entry.mood;
+                });
+                setMoodRatings(ratingsByDate);
+            })
+            .catch(error => {
+                console.error('Error fetching mood ratings:', error);
             });
     }, []);
 
@@ -58,7 +80,24 @@ function Diary() {
         };
         return new Intl.DateTimeFormat('en-US', options).format(new Date(dateTimeString));
     };
-    
+
+    const getMoodColor = (date) => {
+        const mood = moodRatings[date];
+        switch (mood) {
+            case 1:
+                return '#e22a03'; // darkred
+            case 2:
+                return '#ef9c0e'; // orange
+            case 3:
+                return '#ece13b'; // yellow
+            case 4:
+                return '#afe48e'; // pale green
+            case 5:
+                return '#26e616'; // bright green
+            default:
+                return 'white'; // White
+        }
+    };
 
     const handleEdit = (entryId, entry) => {
         setEditMode(prevState => ({
@@ -192,7 +231,7 @@ function Diary() {
             <br />
             <div className='diary-container'>
                 {filteredEntries.map(entry => (
-                    <div className="diary-content" key={entry.id}>
+                    <div className="diary-content" key={entry.id} >
                         {editMode[entry.id] ? (
                             <div>
                                 <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
@@ -207,9 +246,10 @@ function Diary() {
                                 <p>Posted: {formatDateTime(entry.created_at)}</p>
                                 <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
                                 &nbsp; 
-                                <button onClick={() => handleDelete(entry.id)}>Delete</button>
+                                <button onClick={() => handleDelete(entry.id)}>Delete</button> 
                             </React.Fragment>
                         )}
+                    <div className="diary-mood" style={{ backgroundColor: getMoodColor(new Date(entry.created_at).toLocaleDateString()) }}></div>
                     </div>
                 ))}
             </div>

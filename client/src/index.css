@@ -54,6 +54,7 @@ body {
   border: 2px, solid, black;
   margin-bottom: 1em;
   padding: 0.5em;
+  position: relative;
 }
 
 .key-container {
@@ -107,4 +108,13 @@ body {
   padding: 1em;
   margin-left: 1em;
   margin-right: 1em;
+}
+.diary-mood {
+  position: absolute;
+  bottom: 0.25em;
+  right: 0.25em;
+  border: 2px solid black;
+  width: 1.2em;
+  height: 1.2em; 
+  border-radius: 50%; 
 }
