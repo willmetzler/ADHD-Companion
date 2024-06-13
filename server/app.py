@@ -151,7 +151,9 @@ def submit_journal_entry():
         try:
             journal_header = request.json.get('journal_header', 'Journal Entry')
             journal_text = request.json.get('journal_text', '')
-            new_journal = Journal(journal_header=journal_header, journal_text=journal_text, user_id=user_id)
+            created_at = request.json.get('created_at', datetime.now())  # Default to current date if not provided
+            created_at = datetime.strptime(created_at, '%Y-%m-%d')  # Ensure it's in the correct format
+            new_journal = Journal(journal_header=journal_header, journal_text=journal_text, user_id=user_id, created_at=created_at)
             db.session.add(new_journal)
             db.session.commit()
             return jsonify({'message': 'Journal entry submitted successfully'}), 201

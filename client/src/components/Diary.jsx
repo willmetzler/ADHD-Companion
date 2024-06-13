@@ -285,7 +285,7 @@ function Diary() {
                                 <>
                                     <h3>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
-                                    <p>Posted: {formatDateTime(entry.created_at)}</p>
+                                    <p>{formatDateTime(entry.created_at)}</p>
                                     <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
                                     &nbsp; 
                                     <button onClick={() => handleDelete(entry.id)}>Delete</button> 

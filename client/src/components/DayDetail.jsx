@@ -7,6 +7,8 @@ function DayDetail() {
     const [moodRating, setMoodRating] = useState(null);
     const [editMode, setEditMode] = useState({});
     const [editedContent, setEditedContent] = useState({});
+    const [newJournalHeader, setNewJournalHeader] = useState('');
+    const [newJournalText, setNewJournalText] = useState('');
 
     useEffect(() => {
         console.log(`Selected date: ${date}`);
@@ -162,6 +164,38 @@ function DayDetail() {
         }
     };
 
+    const handleNewJournalSubmit = async () => {
+        try {
+            const response = await fetch('/api/journal-entries', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    journal_header: newJournalHeader,
+                    journal_text: newJournalText,
+                    created_at: date  // Set the created_at date to the selected date
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to submit new journal entry');
+            }
+    
+            const newEntry = await response.json();
+            setJournalEntries([...journalEntries, {
+                id: newEntry.id,  // Assuming newEntry contains the id
+                journal_header: newJournalHeader,
+                journal_text: newJournalText,
+                created_at: date
+            }]);
+            setNewJournalHeader('');
+            setNewJournalText('');
+        } catch (error) {
+            console.error('Error submitting new journal entry:', error);
+        }
+    };
+
     return (
         <div>
             <h1>{formatDate(date)}</h1>
@@ -196,8 +230,24 @@ function DayDetail() {
                     </div>
                 ))
             ) : (
-                <p>No journal entry available</p>
+                <p>Nothing to see here...</p>
             )}
+                <br></br>
+                <p>Add New Journal Entry?</p>
+                <input
+                    type="text"
+                    placeholder="Journal Header"
+                    value={newJournalHeader}
+                    onChange={(e) => setNewJournalHeader(e.target.value)}
+                />
+                <textarea
+                    placeholder="Journal Text"
+                    value={newJournalText}
+                    onChange={(e) => setNewJournalText(e.target.value)}
+                    style={{height:'6em'}}
+                />
+                <br></br>
+                <button onClick={handleNewJournalSubmit}>Submit</button>
             </div>
         </div>
     );

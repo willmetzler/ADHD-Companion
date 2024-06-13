@@ -8,7 +8,7 @@ function Medications() {
         drug_name: '',
         dosage: '',
         prescriber: '',
-        renew_date: ''  // Initialize renew_date as an empty string
+        renew_date: ''
     });
     const [showAddMedicationForm, setShowAddMedicationForm] = useState(false);
 
@@ -148,6 +148,12 @@ function Medications() {
         }
     };
 
+    const formatDate = (inputDate) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = new Date(inputDate.replace(/-/g,'\/')).toLocaleDateString('en-US', options);
+        return formattedDate;
+    };
+
     return (
         <div>
             <h1>Medications</h1>
@@ -199,7 +205,7 @@ function Medications() {
                                         <div style={{ fontWeight: 'bold' }}>{medication.drug_name}</div>
                                         <div>Dosage: {medication.dosage}</div>
                                         <div>Prescriber: {medication.prescriber}</div>
-                                        <div>Renewal Date: {medication.renew_date}</div>
+                                        <div>Renewal Date: {formatDate(medication.renew_date)}</div>
                                         <br />
                                         <button onClick={() => handleEditMedication(medication.id)}>Edit</button>
                                         &nbsp;
