@@ -8,10 +8,11 @@ function Diary() {
     const [editedContent, setEditedContent] = useState({});
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [selectedDate, setSelectedDate] = useState(null); 
 
     const [moodRatings, setMoodRatings] = useState({});
-
     const [filteredEntries, setFilteredEntries] = useState([]);
+    const [showMonthViewButton, setShowMonthViewButton] = useState(false);
 
     useEffect(() => {
         fetch('/api/journals')
@@ -40,7 +41,7 @@ function Diary() {
             .then(data => {
                 const ratingsByDate = {};
                 data.forEach(entry => {
-                    const date = new Date(entry.created_at).toLocaleDateString();
+                    const date = new Date(entry.created_at).toISOString().split('T')[0];
                     ratingsByDate[date] = entry.mood;
                 });
                 setMoodRatings(ratingsByDate);
@@ -51,17 +52,30 @@ function Diary() {
     }, []);
 
     useEffect(() => {
-        // Filter entries based on selected month and year
-        const filteredEntries = journalEntries.filter(entry => {
-            const entryDate = new Date(entry.created_at);
-            const entryYear = entryDate.getFullYear();
-            const entryMonth = entryDate.getMonth();
-            return entryYear === selectedYear && entryMonth === currentMonth;
-        });
-        // Sort filtered entries by date in descending order
-        filteredEntries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        setFilteredEntries(filteredEntries);
-    }, [journalEntries, currentMonth, selectedYear]);
+        if (selectedDate) {
+            // Filter entries based on selected date
+            const filteredEntries = journalEntries.filter(entry => {
+                const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
+                return entryDate === selectedDate;
+            });
+            // Sort filtered entries by date in descending order
+            filteredEntries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setFilteredEntries(filteredEntries);
+            setShowMonthViewButton(true); // Show "Month View" button
+        } else {
+            // Filter entries based on selected month and year
+            const filteredEntries = journalEntries.filter(entry => {
+                const entryDate = new Date(entry.created_at);
+                const entryYear = entryDate.getFullYear();
+                const entryMonth = entryDate.getMonth();
+                return entryYear === selectedYear && entryMonth === currentMonth;
+            });
+            // Sort filtered entries by date in descending order
+            filteredEntries.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setFilteredEntries(filteredEntries);
+            setShowMonthViewButton(false); // Hide "Month View" button
+        }
+    }, [journalEntries, currentMonth, selectedYear, selectedDate]);
 
     const getMonthName = (monthIndex) => {
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -69,16 +83,14 @@ function Diary() {
     };
 
     const formatDateTime = (dateTimeString) => {
+        const normalizedDateString = dateTimeString.replace(/-/g,'/');
         const options = {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
             timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
-        return new Intl.DateTimeFormat('en-US', options).format(new Date(dateTimeString));
+        return new Date(normalizedDateString).toLocaleDateString('en-US', options);
     };
 
     const getMoodColor = (date) => {
@@ -195,6 +207,14 @@ function Diary() {
         }
     };
 
+    const handleDateChange = (event) => {
+        setSelectedDate(event.target.value);
+    };
+    
+    const handleDatePickerClear = () => {
+        setSelectedDate(null);
+    };
+
     const handleNextMonth = () => {
         setCurrentMonth(prevMonthIndex => {
             const nextMonth = prevMonthIndex === 11 ? 0 : prevMonthIndex + 1;
@@ -213,45 +233,70 @@ function Diary() {
         });
     };
     
+    const handleToggleMonthView = () => {
+        if (selectedDate) {
+            setSelectedDate(null); // Switch back to "Current Month" view
+        } else {
+            setShowMonthViewButton(false); // Hide "Month View" button
+        }
+    };
+
     const handleToday = () => {
         const today = new Date();
         setCurrentMonth(today.getMonth());
         setSelectedYear(today.getFullYear());
+        setSelectedDate(null); // Reset selectedDate to null to show monthly view
+        setShowMonthViewButton(false); // Hide "Month View" button
     };
 
     return (
         <div>
             <h1>Diary</h1>
-            <h3>{`${getMonthName(currentMonth)} ${selectedYear}`}</h3>
+            <h3>{selectedDate ? formatDateTime(selectedDate) : `${getMonthName(currentMonth)} ${selectedYear}`}</h3>
             <div className='diary-button-div'>
-                <button className='diary-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} style={{ fontSize: '1em' }} /></button>
-                <button className='diary-buttons' onClick={handleToday}>Current Month</button>
-                <button className='diary-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} style={{ fontSize: '1em' }} /></button>
+                {!selectedDate && (
+                    <>
+                        <button className='diary-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} style={{ fontSize: '1em' }} /></button>
+                        <button className='diary-buttons' onClick={handleToday}>Current Month</button>
+                        <button className='diary-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} style={{ fontSize: '1em' }} /></button>
+                    </>
+                )}
+                {selectedDate && (
+                    <button className='diary-buttons' onClick={handleToggleMonthView}>Month View</button>
+                )}
             </div>
             <br />
+            <label htmlFor="datePicker">Select Date:</label>
+            <input type="date" id="datePicker" value={selectedDate || ''} onChange={handleDateChange} />
+            <br />
+            <br />
             <div className='diary-container'>
-                {filteredEntries.map(entry => (
-                    <div className="diary-content" key={entry.id} >
-                        {editMode[entry.id] ? (
-                            <div>
-                                <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
-                                <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
-                                <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
-                                <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
-                            </div>
-                        ) : (
-                            <React.Fragment>
-                                <h3>{entry.journal_header}</h3>
-                                <p>{entry.journal_text}</p>
-                                <p>Posted: {formatDateTime(entry.created_at)}</p>
-                                <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
-                                &nbsp; 
-                                <button onClick={() => handleDelete(entry.id)}>Delete</button> 
-                            </React.Fragment>
-                        )}
-                    <div className="diary-mood" style={{ backgroundColor: getMoodColor(new Date(entry.created_at).toLocaleDateString()) }}></div>
-                    </div>
-                ))}
+                {filteredEntries.length > 0 ? (
+                    filteredEntries.map(entry => (
+                        <div className="diary-content" key={entry.id} >
+                            {editMode[entry.id] ? (
+                                <div>
+                                    <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
+                                    <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
+                                    <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
+                                    <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
+                                </div>
+                            ) : (
+                                <>
+                                    <h3>{entry.journal_header}</h3>
+                                    <p>{entry.journal_text}</p>
+                                    <p>Posted: {formatDateTime(entry.created_at)}</p>
+                                    <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
+                                    &nbsp; 
+                                    <button onClick={() => handleDelete(entry.id)}>Delete</button> 
+                                </>
+                            )}
+                            <div className="diary-mood" style={{ backgroundColor: getMoodColor(new Date(entry.created_at).toISOString().split('T')[0]) }}></div>
+                        </div>
+                    ))
+                ) : (
+                    <p>No journal entries available for selected date</p>
+                )}
             </div>
         </div>
     );

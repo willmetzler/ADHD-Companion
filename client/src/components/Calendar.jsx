@@ -109,11 +109,11 @@ function Calendar({ moodData }) {
             <div>
                 <p>Key:</p>
                 <div className='key-container'>
-                    1<div id='key1'></div>
-                    2<div id='key2'></div>
-                    3<div id='key3'></div>
-                    4<div id='key4'></div>
-                    5<div id='key5'></div>
+                    😔<div id='key1'></div>
+                    🙁<div id='key2'></div>
+                    😐<div id='key3'></div>
+                    🙂<div id='key4'></div>
+                    😁<div id='key5'></div>
                 </div>
             </div>
         </div>

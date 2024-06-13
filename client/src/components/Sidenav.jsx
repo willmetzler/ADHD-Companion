@@ -23,12 +23,6 @@ function Sidenav() {
                     </NavIcon>
                     <NavText>Home</NavText>
                 </NavItem>
-                <NavItem eventKey='profile'>
-                    <NavIcon>
-                        <FontAwesomeIcon icon={faUser} style={{ fontSize: '1.5em' }} />
-                    </NavIcon>
-                    <NavText>Profile</NavText>
-                </NavItem>
                 <NavItem eventKey='calendar'>
                     <NavIcon>
                         <FontAwesomeIcon icon={faCalendar} style={{ fontSize: '1.5em' }} />
@@ -46,6 +40,12 @@ function Sidenav() {
                         <FontAwesomeIcon icon={faPills} style={{ fontSize: '1.5em' }} />
                     </NavIcon>
                     <NavText>Medications</NavText>
+                </NavItem>
+                <NavItem eventKey='profile'>
+                    <NavIcon>
+                        <FontAwesomeIcon icon={faUser} style={{ fontSize: '1.5em' }} />
+                    </NavIcon>
+                    <NavText>Profile</NavText>
                 </NavItem>
             </SideNav.Nav>
         </SideNav>

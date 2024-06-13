@@ -46,7 +46,7 @@ body {
 }
 
 .diary-container {
-  height: calc(100vh - 13em);
+  height: calc(100vh - 15em);
   overflow-y: auto;
 }
 
@@ -67,30 +67,35 @@ body {
   border: solid;
   height: 1em;
   width: 1em;
+  margin-top: 0.15em;
 }
 #key2 {
   background-color: #ef9c0e;
   border: solid;
   height: 1em;
   width: 1em;
+  margin-top: 0.15em;
 }
 #key3 {
   background-color: #ece13b;
   border: solid;
   height: 1em;
   width: 1em;
+  margin-top: 0.15em;
 }
 #key4 {
   background-color: #afe48e;
   border: solid;
   height: 1em;
   width: 1em;
+  margin-top: 0.15em;
 }
 #key5 {
   background-color: #26e616;
   border: solid;
   height: 1em;
   width: 1em;
+  margin-top: 0.15em;
 }
 
 .fc-event .fa-pencil {
@@ -100,15 +105,21 @@ body {
 }
 
 .diary-button-div {
+  display: flex;
+  justify-content: center; /* Center align buttons horizontally */
   margin-left: 0.5em;
 }
 
 .diary-buttons {
-  justify-content: space-evenly;
   padding: 1em;
   margin-left: 1em;
   margin-right: 1em;
 }
+
+.diary-buttons:first-child {
+  margin-left: 0; /* Remove left margin for the first button */
+}
+
 .diary-mood {
   position: absolute;
   bottom: 0.25em;
