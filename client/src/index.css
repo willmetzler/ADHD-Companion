@@ -124,3 +124,15 @@ body {
   border: 2px, solid, black;
   padding: 0.5em;
 }
+
+.day-journal-container {
+  height: calc(100vh - 13em);
+  overflow-y: auto;
+}
+
+.day-content {
+  border: 2px, solid, black;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  position: relative;
+}
