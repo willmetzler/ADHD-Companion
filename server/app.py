@@ -230,6 +230,43 @@ def add_medication():
         return jsonify({'error': 'User not logged in'}), 401
 
 
+@app.delete('/api/medications/<int:id>')
+def delete_medication(id):
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            medication = Medications.query.filter_by(id=id, user_id=user_id).first()
+            if medication:
+                db.session.delete(medication)
+                db.session.commit()
+                return jsonify({'message': 'Medication deleted successfully'}), 200
+            else:
+                return jsonify({'error': 'Medication not found'}), 404
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.put('/api/medications/<int:id>')
+def update_medication(id):
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            medication = Medications.query.filter_by(id=id, user_id=user_id).first()
+            if medication:
+                medication.drug_name = request.json.get('drug_name', medication.drug_name)
+                medication.dosage = request.json.get('dosage', medication.dosage)
+                medication.prescriber = request.json.get('prescriber', medication.prescriber)
+                medication.renew_date = request.json.get('renew_date', medication.renew_date)
+                
+                db.session.commit()
+                return jsonify({'message': 'Medication updated successfully'}), 200
+            else:
+                return jsonify({'error': 'Medication not found'}), 404
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
 
 
 if __name__ == '__main__':

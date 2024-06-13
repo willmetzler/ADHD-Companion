@@ -132,6 +132,7 @@ body {
 
 .my-medications {
   margin-left: 1em;
+  margin-bottom: 1em;
   border: 2px, solid, black;
   padding: 0.5em;
 }
