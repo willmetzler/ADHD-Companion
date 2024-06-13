@@ -8,7 +8,7 @@ function Medications() {
         drug_name: '',
         dosage: '',
         prescriber: '',
-        renew_date: ''
+        renew_date: ''  // Initialize renew_date as an empty string
     });
     const [showAddMedicationForm, setShowAddMedicationForm] = useState(false);
 
@@ -56,7 +56,7 @@ function Medications() {
                 drug_name: medicationToEdit.drug_name,
                 dosage: medicationToEdit.dosage,
                 prescriber: medicationToEdit.prescriber,
-                renew_date: medicationToEdit.renew_date
+                renew_date: medicationToEdit.renew_date  // Keep renew_date as a string for editing
             }
         }));
     };
@@ -140,7 +140,7 @@ function Medications() {
                 drug_name: '',
                 dosage: '',
                 prescriber: '',
-                renew_date: ''
+                renew_date: ''  // Reset renew_date to empty string
             });
             setShowAddMedicationForm(false);
         } catch (error) {
@@ -184,7 +184,7 @@ function Medications() {
                                         />
                                         <br /><br />
                                         <input
-                                            type='text'
+                                            type='date'
                                             placeholder='Renewal Date...'
                                             name='renew_date'
                                             value={editedMedications[medication.id]?.renew_date || ''}
@@ -246,7 +246,7 @@ function Medications() {
                         />
                         <br /><br />
                         <input
-                            type='text'
+                            type='date'
                             placeholder='Renewal Date...'
                             name='renew_date'
                             value={newMedication.renew_date}

@@ -200,12 +200,16 @@ def delete_journal_entry(id):
 
 # MEDICATIONS
 
-@app.get('/api/medications')
+@app.route('/api/medications')
 def get_medications():
     user_id = session.get('user_id')
     if user_id:
-        medications = Medications.query.filter_by(user_id=user_id).all()
-        return jsonify([medication.to_dict() for medication in medications]), 200
+        try:
+            medications = Medications.query.filter_by(user_id=user_id).all()
+            return jsonify([medication.to_dict() for medication in medications]), 200
+        except Exception as e:
+            print(f"Error fetching medications: {str(e)}") 
+            return jsonify({'error': 'Internal Server Error'}), 500
     else:
         return jsonify({'error': 'User not logged in'}), 401
 
@@ -214,11 +218,14 @@ def add_medication():
     user_id = session.get('user_id')
     if user_id:
         try:
+            renew_date_str = request.json['renew_date']
+            renew_date = datetime.strptime(renew_date_str, '%Y-%m-%d').date()
+
             new_medication = Medications(
                 drug_name=request.json['drug_name'],
                 dosage=request.json['dosage'],
                 prescriber=request.json['prescriber'],
-                renew_date=request.json['renew_date'],
+                renew_date=renew_date,
                 user_id=user_id
             )
             db.session.add(new_medication)
@@ -257,7 +264,7 @@ def update_medication(id):
                 medication.drug_name = request.json.get('drug_name', medication.drug_name)
                 medication.dosage = request.json.get('dosage', medication.dosage)
                 medication.prescriber = request.json.get('prescriber', medication.prescriber)
-                medication.renew_date = request.json.get('renew_date', medication.renew_date)
+                medication.renew_date = datetime.strptime(request.json.get('renew_date', medication.renew_date), '%Y-%m-%d').date()  # Convert string to date
                 
                 db.session.commit()
                 return jsonify({'message': 'Medication updated successfully'}), 200
@@ -267,6 +274,7 @@ def update_medication(id):
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'User not logged in'}), 401
+
 
 
 if __name__ == '__main__':

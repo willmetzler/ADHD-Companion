@@ -18,7 +18,7 @@ if __name__ == '__main__':
         print("Creating User")
         will = User(first_name="Will", last_name="Metzler", username="willmetzler", _hashed_password='123')
         db.session.add(will)
-        
+
         print("Creating Mood Ratings")
         
         def generate_random_mood_rating():
