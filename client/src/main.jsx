@@ -9,6 +9,7 @@ import Medications from './components/Medications.jsx';
 import Signup from './components/Signup.jsx';
 import Login from './components/Login.jsx';
 import Userpanel from './components/Userpanel.jsx';
+import DayDetail from './components/DayDetail.jsx';
 import Sidenav from './components/Sidenav.jsx';
 import './index.css';
 
@@ -52,6 +53,10 @@ const routes = [
             {
                 path: 'userpanel',
                 element: <Userpanel />
+            },
+            {
+                path: 'day/:date',
+                element: <DayDetail />
             }
         ]
     }

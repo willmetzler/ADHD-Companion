@@ -32,7 +32,7 @@ class Mood(db.Model, SerializerMixin):
     mood_rating = db.Column(db.Integer)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))  # Add this line
     journal_id = db.Column(db.Integer, db.ForeignKey('journal_table.id'))
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=db.func.now())
 
     journal = db.relationship('Journal', back_populates='mood')
 

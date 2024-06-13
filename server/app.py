@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from models import db, User, Journal, Mood, Medications
 
@@ -80,7 +80,9 @@ def get_journals():
     user_id = session.get('user_id')
     if user_id:
         journals = Journal.query.filter_by(user_id=user_id).all()
-        return jsonify([journal.to_dict() for journal in journals]), 200
+        response = jsonify([journal.to_dict() for journal in journals])
+        print(f"Journals: {response.get_json()}")  # Add this line
+        return response, 200
     else:
         return jsonify({'error': 'User not logged in'}), 401
 
@@ -108,7 +110,9 @@ def get_mood_ratings():
     if user_id:
         moods = Mood.query.filter_by(user_id=user_id).all()
         mood_ratings = [{'created_at': mood.created_at, 'mood': mood.mood_rating} for mood in moods]
-        return jsonify(mood_ratings), 200
+        response = jsonify(mood_ratings)
+        print(f"Mood Ratings: {response.get_json()}")  # Add this line
+        return response, 200
     else:
         return jsonify({'error': 'User not logged in'}), 401
 

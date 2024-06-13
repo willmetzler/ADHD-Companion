@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil } from '@fortawesome/free-solid-svg-icons';
 
-function Calendar() {
+function Calendar({ moodData }) {
     const [events, setEvents] = useState([]);
     const calendarRef = useRef(null);
     const [journalEntries, setJournalEntries] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch('/api/mood-ratings')
@@ -20,7 +21,6 @@ function Calendar() {
                 return response.json();
             })
             .then(data => {
-                // Group mood ratings by date
                 const eventsData = data.reduce((acc, entry) => {
                     const date = new Date(entry.created_at).toISOString().split('T')[0];
                     acc[date] = entry.mood;
@@ -42,7 +42,6 @@ function Calendar() {
                 return response.json();
             })
             .then(data => {
-                // Group journal entries by date
                 const journalEntriesData = data.reduce((acc, entry) => {
                     const date = new Date(entry.created_at).toISOString().split('T')[0];
                     acc[date] = true; // Indicate that there is a journal entry for this date
@@ -60,13 +59,13 @@ function Calendar() {
             const api = calendarRef.current.getApi();
             const eventSources = Object.entries(events).map(([date, mood]) => ({
                 start: date,
-                end: date, // End date same as start to create all-day event
+                end: date,
                 display: 'background',
-                color: getBackgroundColor(mood), // Set background color based on mood rating
+                color: getBackgroundColor(mood),
                 extendedProps: { hasJournalEntry: journalEntries[date] }
             }));
-            api.removeAllEventSources(); // Clear existing event sources
-            api.addEventSource(eventSources); // Add new event sources
+            api.removeAllEventSources();
+            api.addEventSource(eventSources);
         }
     }, [events, journalEntries]);
 
@@ -87,6 +86,16 @@ function Calendar() {
         }
     };
 
+    const handleDateClick = (info) => {
+        const date = info.dateStr;
+        console.log(date)
+        if (date) {
+            navigate(`/day/${date}`);
+        } else {
+            console.error('Date is not defined in the event');
+        }
+    };
+
     return (
         <div className="calendar-container">
             <FullCalendar
@@ -95,6 +104,7 @@ function Calendar() {
                 initialView="dayGridMonth"
                 height="auto"
                 eventContent={renderEventContent}
+                dateClick={handleDateClick}
             />
             <div>
                 <p>Key:</p>
