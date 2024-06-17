@@ -56,5 +56,5 @@ class Medications(db.Model, SerializerMixin):
     drug_name = db.Column(db.String, nullable=False)
     dosage = db.Column(db.Integer, nullable=False)
     prescriber = db.Column(db.String, nullable=False)
-    renew_date = db.Column(db.Date)
+    renew_date = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))

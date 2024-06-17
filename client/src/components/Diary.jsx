@@ -97,7 +97,7 @@ function Diary() {
         const mood = moodRatings[date];
         switch (mood) {
             case 1:
-                return '#e22a03'; // darkred
+                return '#e35337'; // darkred
             case 2:
                 return '#ef9c0e'; // orange
             case 3:

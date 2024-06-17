@@ -40,7 +40,7 @@ function Home() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ journal_header: journalHeader, journal_text: journalText,}), // Include mood property
+            body: JSON.stringify({ journal_header: journalHeader, journal_text: journalText,}), 
         })
             .then((response) => response.json())
             .then((data) => {
