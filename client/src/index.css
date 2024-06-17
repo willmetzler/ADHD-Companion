@@ -17,18 +17,26 @@ body {
 .app-container {
   display: flex;
   height: 100vh; 
+  flex: 1;
   justify-content: center; 
 }
 
 .sidebar {
-  flex: 0 0 4em; 
-  background-color: #f0f0f0;
+  position: fixed; /* Fix the sidebar */
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4em;
+  background-color: #2596be; /* Your sidebar background color */
+  color: #fff;
+  overflow-y: auto;
 }
 
 .main-content {
-  flex: 1; 
+  margin-left: 4em; /* Adjust this if your sidebar width changes */
+  flex: 1;
   padding: 1em; 
-  justify-content: center;
+  overflow-y: auto; /* Allow the main content to scroll */
 }
 
 .mood-buttons {
@@ -126,7 +134,7 @@ body {
 }
 
 .fc-multiMonth-view {
-  background-color: #c3d9e8; /* Match this color to your app background */
+  background-color: #c3d9e8;
 }
 
 .fc .fc-multimonth {
@@ -142,12 +150,12 @@ body {
 }
 
 .fc-daygrid-day {
-  background-color: #c3d9e8; /* Match this color to your app background */
+  background-color: #c3d9e8;
+  height: 3em;
 }
 
-/* Additional styling to ensure a seamless look */
 .fc-daygrid-day-frame {
-  background-color: inherit; /* Ensure the day frame matches the background */
+  background-color: inherit;
 }
 
 .fc-event .fa-prescription-bottle {
