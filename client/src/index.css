@@ -22,7 +22,7 @@ body {
 
 .sidebar {
   flex: 0 0 4em; 
-  background-color: #f0f0f0; 
+  background-color: #f0f0f0;
 }
 
 .main-content {
@@ -118,10 +118,36 @@ body {
 .fc-theme-standard td,
 .fc-theme-standard th {
     border-color: black;
+    background-color: #c3d9e8;
 }
 
 .fc .fc-scrollgrid {
   border: 1px solid black; 
+}
+
+.fc-multiMonth-view {
+  background-color: #c3d9e8; /* Match this color to your app background */
+}
+
+.fc .fc-multimonth {
+  border: 1px, solid,black;
+}
+
+.fc-multimonth-title {
+  background-color: #c3d9e8;
+}
+
+.fc-multimonth-header-table {
+  background-color: #c3d9e8;
+}
+
+.fc-daygrid-day {
+  background-color: #c3d9e8; /* Match this color to your app background */
+}
+
+/* Additional styling to ensure a seamless look */
+.fc-daygrid-day-frame {
+  background-color: inherit; /* Ensure the day frame matches the background */
 }
 
 .fc-event .fa-prescription-bottle {

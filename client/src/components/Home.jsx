@@ -62,17 +62,15 @@ function Home() {
             <div className='mood-container'>
                 <h2>How are you feeling today?</h2>
                 <div className='mood-buttons'>
-                    <button className={`mood-button ${mood === 1 ? 'selected' : ''}`} onClick={() => handleMoodChange(1)}>😔</button>
-                    <button className={`mood-button ${mood === 2 ? 'selected' : ''}`} onClick={() => handleMoodChange(2)}>🙁</button>
-                    <button className={`mood-button ${mood === 3 ? 'selected' : ''}`} onClick={() => handleMoodChange(3)}>😐</button>
-                    <button className={`mood-button ${mood === 4 ? 'selected' : ''}`} onClick={() => handleMoodChange(4)}>🙂</button>
-                    <button className={`mood-button ${mood === 5 ? 'selected' : ''}`} onClick={() => handleMoodChange(5)}>😁</button>
+                    <button style={{backgroundColor:'#e35337'}} className={`mood-button ${mood === 1 ? 'selected' : ''}`} onClick={() => handleMoodChange(1)}>😔</button>
+                    <button style={{backgroundColor:'#ef9c0e'}} className={`mood-button ${mood === 2 ? 'selected' : ''}`} onClick={() => handleMoodChange(2)}>🙁</button>
+                    <button style={{backgroundColor:'#ece13b'}} className={`mood-button ${mood === 3 ? 'selected' : ''}`} onClick={() => handleMoodChange(3)}>😐</button>
+                    <button style={{backgroundColor:'#afe48e'}} className={`mood-button ${mood === 4 ? 'selected' : ''}`} onClick={() => handleMoodChange(4)}>🙂</button>
+                    <button style={{backgroundColor:'#26e616'}} className={`mood-button ${mood === 5 ? 'selected' : ''}`} onClick={() => handleMoodChange(5)}>😁</button>
                 </div>
                 <br></br>
                 <button onClick={handleMoodSubmit}>Submit</button>
             </div>
-            <br></br>
-            <br></br>
             <div className='journal-container'>
                 <h2>Today's thoughts...</h2>
                 <input
@@ -92,6 +90,9 @@ function Home() {
                 <br></br>
                 <br></br>
                 <button onClick={handleJournalSubmit}>Submit</button>
+            </div>
+            <div className='task-container'>
+                <h2>Today's Tasks...</h2>
             </div>
         </div>
     );

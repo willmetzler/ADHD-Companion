@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import multiMonthPlugin from '@fullcalendar/multimonth';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faPrescriptionBottle } from '@fortawesome/free-solid-svg-icons';
@@ -11,6 +12,7 @@ function Calendar() {
     const [journalEntries, setJournalEntries] = useState({});
     const [medications, setMedications] = useState({});
     const [isKeyVisible, setIsKeyVisible] = useState(false);
+    const [yearView, setYearView] = useState(false); // Default to month view
     const calendarRef = useRef(null);
     const navigate = useNavigate();
 
@@ -130,6 +132,17 @@ function Calendar() {
         }
     }, [events, journalEntries, medications]);
 
+    useEffect(() => {
+        if (calendarRef.current) {
+            const api = calendarRef.current.getApi();
+            if (yearView) {
+                api.changeView('multiMonthYear');
+            } else {
+                api.changeView('dayGridMonth');
+            }
+        }
+    }, [yearView]);
+
     const getBackgroundColor = moodRating => {
         switch (moodRating) {
             case 1:
@@ -161,12 +174,17 @@ function Calendar() {
         setIsKeyVisible(!isKeyVisible);
     };
 
+    const toggleYearView = () => {
+        setYearView(!yearView);
+    };
+
     return (
         <div className="calendar-container">
+            <button onClick={toggleYearView}>{yearView ? 'Month View' : 'Year View'}</button>
             <FullCalendar
                 ref={calendarRef}
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                plugins={[dayGridPlugin, interactionPlugin, multiMonthPlugin]}
+                initialView="dayGridMonth" // Set initial view to month
                 height="auto"
                 eventContent={renderEventContent}
                 dateClick={handleDateClick}
