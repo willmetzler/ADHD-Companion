@@ -4,14 +4,14 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPencil, faCapsules } from '@fortawesome/free-solid-svg-icons';
+import { faPencil, faPrescriptionBottle } from '@fortawesome/free-solid-svg-icons';
 
 function Calendar() {
     const [events, setEvents] = useState({});
-    const calendarRef = useRef(null);
     const [journalEntries, setJournalEntries] = useState({});
     const [medications, setMedications] = useState({});
     const [isKeyVisible, setIsKeyVisible] = useState(false);
+    const calendarRef = useRef(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -65,10 +65,9 @@ function Calendar() {
                 return response.json();
             })
             .then(data => {
-                console.log('Medications data:', data); // Logging fetched data
                 const medicationsData = data.reduce((acc, entry) => {
                     const date = new Date(entry.renew_date).toISOString().split('T')[0];
-                    acc[date] = true; // Indicate that there is a medication renewal for this date
+                    acc[date] = true;
                     return acc;
                 }, {});
                 setMedications(medicationsData);
@@ -81,22 +80,50 @@ function Calendar() {
     useEffect(() => {
         if (calendarRef.current) {
             const api = calendarRef.current.getApi();
-            const daysInMonth = getDaysInMonth(new Date());
-            const eventSources = daysInMonth.map(date => {
-                const dateString = date.toISOString().split('T')[0];
-                return {
-                    start: dateString,
-                    end: dateString,
+            const eventSources = [];
+
+            Object.keys(events).forEach(date => {
+                eventSources.push({
+                    start: date,
+                    end: date,
                     display: 'background',
-                    color: getBackgroundColor(events[dateString]),
+                    color: getBackgroundColor(events[date]),
                     extendedProps: {
-                        hasJournalEntry: journalEntries[dateString] || false,
-                        hasMedicationRenewal: medications[dateString] || false,
+                        hasJournalEntry: journalEntries[date] || false,
+                        hasMedicationRenewal: medications[date] || false,
                     }
-                };
+                });
             });
 
-            console.log('Event sources before setting:', eventSources); // Detailed logging
+            Object.keys(journalEntries).forEach(date => {
+                if (!events[date]) {
+                    eventSources.push({
+                        start: date,
+                        end: date,
+                        display: 'background',
+                        color: '#c3d9e8',
+                        extendedProps: {
+                            hasJournalEntry: true,
+                            hasMedicationRenewal: medications[date] || false,
+                        }
+                    });
+                }
+            });
+
+            Object.keys(medications).forEach(date => {
+                if (!events[date] && !journalEntries[date]) {
+                    eventSources.push({
+                        start: date,
+                        end: date,
+                        display: 'background',
+                        color: '#c3d9e8',
+                        extendedProps: {
+                            hasJournalEntry: false,
+                            hasMedicationRenewal: true,
+                        }
+                    });
+                }
+            });
 
             api.removeAllEventSources();
             api.addEventSource(eventSources);
@@ -106,17 +133,17 @@ function Calendar() {
     const getBackgroundColor = moodRating => {
         switch (moodRating) {
             case 1:
-                return '#e35337'; // darkred
+                return '#e35337';
             case 2:
-                return '#ef9c0e'; // orange
+                return '#ef9c0e';
             case 3:
-                return '#ece13b'; // yellow
+                return '#ece13b';
             case 4:
-                return '#afe48e'; // pale green
+                return '#afe48e';
             case 5:
-                return '#26e616'; // bright green
+                return '#26e616';
             default:
-                return '#c3d9e8'; // matching background color of app
+                return '#c3d9e8';
         }
     };
 
@@ -128,17 +155,6 @@ function Calendar() {
         } else {
             console.error('Date is not defined in the event');
         }
-    };
-
-    const getDaysInMonth = (date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const numDays = new Date(year, month + 1, 0).getDate();
-        const days = [];
-        for (let i = 1; i <= numDays; i++) {
-            days.push(new Date(year, month, i));
-        }
-        return days;
     };
 
     const toggleKeyVisibility = () => {
@@ -173,7 +189,7 @@ function Calendar() {
                             😁<div id='key5'></div>
                         </div>
                         <p style={{ marginLeft: '.5em' }}><FontAwesomeIcon icon={faPencil} /> Journal Entry</p>
-                        <p style={{ marginLeft: '.5em' }}><FontAwesomeIcon icon={faCapsules} /> Medication Renewal</p>
+                        <p style={{ marginLeft: '.5em' }}><FontAwesomeIcon icon={faPrescriptionBottle} /> Medication Renewal</p>
                     </div>
                 )}
             </div>
@@ -183,11 +199,10 @@ function Calendar() {
 
 function renderEventContent(eventInfo) {
     const { hasJournalEntry, hasMedicationRenewal } = eventInfo.event.extendedProps;
-    console.log('Render event content:', hasJournalEntry, hasMedicationRenewal); // Add this line
     return (
         <>
             {hasJournalEntry && <FontAwesomeIcon icon={faPencil} />}
-            {hasMedicationRenewal && <FontAwesomeIcon icon={faCapsules} />} {/* Display medication renewal icon */}
+            {hasMedicationRenewal && <FontAwesomeIcon icon={faPrescriptionBottle} />}
             <div>{eventInfo.timeText}</div>
         </>
     );

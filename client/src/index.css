@@ -115,7 +115,16 @@ body {
   right: 0.15em;
 }
 
-.fc-event .fa-capsules {
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: black;
+}
+
+.fc .fc-scrollgrid {
+  border: 1px solid black; 
+}
+
+.fc-event .fa-prescription-bottle {
   position: absolute;
   bottom: 0.25em;
   left: 0.15em;
