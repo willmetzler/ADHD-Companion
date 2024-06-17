@@ -10,6 +10,8 @@ function DayDetail() {
     const [newJournalHeader, setNewJournalHeader] = useState('');
     const [newJournalText, setNewJournalText] = useState('');
     const [isAddingJournal, setIsAddingJournal] = useState(false); // State for toggling new journal entry inputs
+    const [isEditingMood, setIsEditingMood] = useState(false); // State for editing mood rating
+    const [newMoodRating, setNewMoodRating] = useState(null); // State for new mood rating
 
     useEffect(() => {
         const fetchJournalEntries = async () => {
@@ -33,6 +35,7 @@ function DayDetail() {
                     return entryDate === date;
                 });
                 setMoodRating(mood.length ? mood[mood.length - 1].mood : null);
+                setNewMoodRating(mood.length ? mood[mood.length - 1].mood : null);
             }
         };
 
@@ -61,6 +64,14 @@ function DayDetail() {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const formattedDate = new Date(inputDate.replace(/-/g, '\/')).toLocaleDateString('en-US', options);
         return formattedDate;
+    };
+
+    const isFutureDate = (inputDate) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today to midnight
+        const givenDate = new Date(inputDate.replace(/-/g, '\/'));
+        givenDate.setHours(0, 0, 0, 0); // Normalize input date to midnight
+        return givenDate > today;
     };
 
     const handleEdit = (entryId, entry) => {
@@ -192,10 +203,67 @@ function DayDetail() {
         }
     };
 
+    const handleEditMood = () => {
+        setIsEditingMood(true);
+    };
+
+    const handleSaveMood = async () => {
+        if (isFutureDate(date)) {
+            console.error('Cannot save mood rating for future dates');
+            setIsEditingMood(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/mood-ratings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    mood: newMoodRating,
+                    created_at: date  // Ensure the created_at date is set correctly
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save mood rating');
+            }
+
+            setMoodRating(newMoodRating);
+            setIsEditingMood(false);
+        } catch (error) {
+            console.error('Error saving mood rating:', error);
+        }
+    };
+
+    const handleCancelMoodEdit = () => {
+        setNewMoodRating(moodRating);
+        setIsEditingMood(false);
+    };
+
     return (
         <div>
             <h1>{formatDate(date)}</h1>
-            <h2>Mood Rating: {moodRating ? `${moodRating}/5 ${getMoodEmoji(moodRating)}` : '(None)'}</h2>
+            <h2>
+                Mood Rating: {moodRating ? `${moodRating}/5 ${getMoodEmoji(moodRating)}` : '(None)'}
+                {!isFutureDate(date) && !isEditingMood && <button style={{scale:'150%', marginLeft:'2em'}} onClick={handleEditMood}>Edit Mood</button>}
+            </h2>
+            {isEditingMood && (
+                <div>
+                    <select style={{scale:'150%', marginLeft:'2em'}} value={newMoodRating} onChange={(e) => setNewMoodRating(Number(e.target.value))}>
+                        <option value={1}>1 😔</option>
+                        <option value={2}>2 🙁</option>
+                        <option value={3}>3 😐</option>
+                        <option value={4}>4 🙂</option>
+                        <option value={5}>5 😁</option>
+                    </select>
+                    &nbsp;
+                    <button style={{scale:'125%', marginLeft:'2em'}}  onClick={handleSaveMood}>Save</button>
+                    &nbsp;
+                    <button style={{scale:'125%', marginLeft:'2em'}} onClick={handleCancelMoodEdit}>Cancel</button>
+                </div>
+            )}
             <h2>Journal Entries:</h2>
             <div className='day-journal-container'>
                 {journalEntries.length > 0 ? (
@@ -230,7 +298,7 @@ function DayDetail() {
                 )}
                 <br></br>
                 {!isAddingJournal && (
-                    <button onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
+                    <button style={{scale:'150%', marginLeft:'3em'}} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
                 )}
                 {isAddingJournal && (
                     <div>
@@ -238,18 +306,24 @@ function DayDetail() {
                             type="text"
                             placeholder="Journal Header"
                             value={newJournalHeader}
+                            className="large-placeholder"
                             onChange={(e) => setNewJournalHeader(e.target.value)}
+                            style={{height:'1.5em', width:'15em' }}
                         />
+                        <br></br>
+                        <br></br>
                         <textarea
                             placeholder="Journal Text"
                             value={newJournalText}
+                            className="large-placeholder"
                             onChange={(e) => setNewJournalText(e.target.value)}
-                            style={{ height: '6em' }}
+                            style={{ height: '12em', width:'18em' }}
                         />
                         <br></br>
-                        <button onClick={handleNewJournalSubmit}>Submit</button>
-                        &nbsp;
-                        <button onClick={() => setIsAddingJournal(false)}>Cancel</button>
+                        <br></br>
+                        <button style={{scale:'150%', marginLeft:'1em'}} onClick={handleNewJournalSubmit}>Submit</button>
+                        &nbsp; &nbsp; &nbsp;
+                        <button style={{scale:'150%', marginLeft:'1em'}} onClick={() => setIsAddingJournal(false)}>Cancel</button>
                     </div>
                 )}
             </div>

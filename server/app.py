@@ -72,6 +72,49 @@ def logout():
     session.pop('user_id')
     return {}, 204
 
+#MOOD RATINGS
+@app.get('/api/mood-ratings')
+def get_mood_ratings():
+    user_id = session.get('user_id')
+    if user_id:
+        moods = Mood.query.filter_by(user_id=user_id).all()
+        mood_ratings = [{'created_at': mood.created_at, 'mood': mood.mood_rating} for mood in moods]
+        response = jsonify(mood_ratings)
+        print(f"Mood Ratings: {response.get_json()}")  # Add this line
+        return response, 200
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.post('/api/mood-ratings')
+def submit_mood_rating():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            # Get the date for which the mood rating is being submitted
+            created_at_str = request.json.get('created_at')
+            created_at = datetime.strptime(created_at_str, '%Y-%m-%d').date() if created_at_str else datetime.now().date()
+            
+            # Check if a mood rating for the specified date already exists for the user
+            existing_rating = Mood.query.filter_by(user_id=user_id, created_at=created_at).first()
+            if existing_rating:
+                # Update the existing mood rating
+                existing_rating.mood_rating = request.json['mood']
+                db.session.commit()
+                return jsonify({'message': 'Mood rating updated successfully'}), 200
+            else:
+                # Create a new mood rating
+                new_mood = request.json['mood']
+                if new_mood not in range(1, 6):
+                    return jsonify({'error': 'Invalid mood rating'}), 400
+                new_mood = Mood(mood_rating=new_mood, user_id=user_id, created_at=created_at)
+                db.session.add(new_mood)
+                db.session.commit()
+                return jsonify({'message': 'Mood rating submitted successfully'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
 
 
 #JOURNALS
@@ -103,46 +146,6 @@ def create_journal():
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'User not logged in'}), 401
-
-@app.get('/api/mood-ratings')
-def get_mood_ratings():
-    user_id = session.get('user_id')
-    if user_id:
-        moods = Mood.query.filter_by(user_id=user_id).all()
-        mood_ratings = [{'created_at': mood.created_at, 'mood': mood.mood_rating} for mood in moods]
-        response = jsonify(mood_ratings)
-        print(f"Mood Ratings: {response.get_json()}")  # Add this line
-        return response, 200
-    else:
-        return jsonify({'error': 'User not logged in'}), 401
-
-@app.post('/api/mood-ratings')
-def submit_mood_rating():
-    user_id = session.get('user_id')
-    if user_id:
-        try:
-            # Check if a mood rating for today already exists for the user
-            today = datetime.now().date()
-            existing_rating = Mood.query.filter_by(user_id=user_id, created_at=today).first()
-            if existing_rating:
-                # Update the existing mood rating
-                existing_rating.mood_rating = request.json['mood']
-                db.session.commit()
-                return jsonify({'message': 'Mood rating updated successfully'}), 200
-            else:
-                # Create a new mood rating
-                new_mood = request.json['mood']
-                if new_mood not in range(1, 6):
-                    return jsonify({'error': 'Invalid mood rating'}), 400
-                new_mood = Mood(mood_rating=new_mood, user_id=user_id)
-                db.session.add(new_mood)
-                db.session.commit()
-                return jsonify({'message': 'Mood rating submitted successfully'}), 201
-        except Exception as e:
-            return jsonify({'error': str(e)}), 400
-    else:
-        return jsonify({'error': 'User not logged in'}), 401
-
 
 @app.post('/api/journal-entries')
 def submit_journal_entry():

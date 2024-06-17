@@ -69,7 +69,7 @@ function Home() {
                     <button style={{backgroundColor:'#26e616'}} className={`mood-button ${mood === 5 ? 'selected' : ''}`} onClick={() => handleMoodChange(5)}>😁</button>
                 </div>
                 <br></br>
-                <button onClick={handleMoodSubmit}>Submit</button>
+                <button style={{scale:'125%', marginLeft:'1em'}} onClick={handleMoodSubmit}>Submit</button>
             </div>
             <div className='journal-container'>
                 <h2>Today's thoughts...</h2>
@@ -78,6 +78,8 @@ function Home() {
                     value={journalHeader}
                     onChange={handleJournalHeaderChange}
                     placeholder='Journal Entry Header'
+                    className="large-placeholder"
+                    style={{height:'1.5em', width:'15em' }}
                 />
                 <br></br>
                 <br></br>
@@ -89,10 +91,10 @@ function Home() {
                 ></textarea>
                 <br></br>
                 <br></br>
-                <button onClick={handleJournalSubmit}>Submit</button>
+                <button style={{scale:'125%', marginLeft:'1em'}} onClick={handleJournalSubmit}>Submit</button>
             </div>
             <div className='task-container'>
-                <h2>Today's Tasks...</h2>
+                <h2>Add a Task...</h2>
             </div>
         </div>
     );

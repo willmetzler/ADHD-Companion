@@ -10,6 +10,7 @@ import Signup from './components/Signup.jsx';
 import Login from './components/Login.jsx';
 import Userpanel from './components/Userpanel.jsx';
 import DayDetail from './components/DayDetail.jsx';
+import Todo from './components/Todo.jsx';
 import Sidenav from './components/Sidenav.jsx';
 import './index.css';
 
@@ -41,6 +42,10 @@ const routes = [
             {
                 path: 'medications',
                 element: <Medications />
+            },
+            {
+                path: 'todo',
+                element: <Todo />
             },
             {
                 path: 'signup',

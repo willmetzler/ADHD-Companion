@@ -1,7 +1,7 @@
 import SideNav, { Toggle, Nav, NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faUser, faCalendar, faBook, faPills } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faUser, faCalendar, faBook, faPills, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -54,6 +54,12 @@ function Sidenav() {
                         <FontAwesomeIcon icon={faPills} style={iconStyle} />
                     </NavIcon>
                     <NavText style={textStyle}>Medications</NavText>
+                </NavItem>
+                <NavItem eventKey='todo'>
+                    <NavIcon>
+                        <FontAwesomeIcon icon={faCheck} style={iconStyle} />
+                    </NavIcon>
+                    <NavText style={textStyle}>To-Do List</NavText>
                 </NavItem>
                 <NavItem eventKey='profile'>
                     <NavIcon>

@@ -22,7 +22,7 @@ function Profile () {
                 </div>
             </div>
             <div className='logout'>
-                {currentUser && <button onClick={handleLogout}>Logout</button>}
+                {currentUser && <button style={{scale:'125%', marginLeft:'0.5em'}} onClick={handleLogout}>Logout</button>}
             </div>
         </div>
     )

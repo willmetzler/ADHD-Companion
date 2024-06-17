@@ -22,10 +22,6 @@ body {
 }
 
 .sidebar {
-  position: fixed; /* Fix the sidebar */
-  top: 0;
-  bottom: 0;
-  left: 0;
   width: 4em;
   background-color: #2596be; /* Your sidebar background color */
   color: #fff;
@@ -33,7 +29,6 @@ body {
 }
 
 .main-content {
-  margin-left: 4em; /* Adjust this if your sidebar width changes */
   flex: 1;
   padding: 1em; 
   overflow-y: auto; /* Allow the main content to scroll */
@@ -54,9 +49,8 @@ body {
   height: 18vh
 }
 
-.diary-container {
-  height: calc(100vh - 15em);
-  overflow-y: auto;
+.journal-text-field::placeholder {
+  font-size: 1.5em;
 }
 
 .diary-content {
@@ -202,6 +196,10 @@ body {
 .day-journal-container {
   height: calc(100vh - 13em);
   overflow-y: auto;
+}
+
+.large-placeholder::placeholder {
+  font-size: 1.5em;
 }
 
 .day-content {

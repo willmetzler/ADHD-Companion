@@ -207,9 +207,9 @@ function Medications() {
                                         <div>Prescriber: {medication.prescriber}</div>
                                         <div>Renewal Date: {formatDate(medication.renew_date)}</div>
                                         <br />
-                                        <button onClick={() => handleEditMedication(medication.id)}>Edit</button>
+                                        <button style={{scale:'125%', marginLeft:'0.5em', marginBottom:'0.25em'}} onClick={() => handleEditMedication(medication.id)}>Edit</button>
                                         &nbsp;
-                                        <button onClick={() => handleDeleteMedication(medication.id)}>Delete</button>
+                                        <button style={{scale:'125%', marginLeft:'1em', marginBottom:'0.25em'}} onClick={() => handleDeleteMedication(medication.id)}>Delete</button>
                                     </>
                                 )}
                             </div>
@@ -220,7 +220,7 @@ function Medications() {
             )}
 
             <div>
-                <button onClick={() => setShowAddMedicationForm(true)}>Add Prescription</button>
+                <button style={{scale:'125%', marginLeft:'2em'}} onClick={() => setShowAddMedicationForm(true)}>Add Prescription</button>
             </div>
 
             {showAddMedicationForm && (
