@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons';
 
 function DayDetail() {
     const { date } = useParams();
+    const navigate = useNavigate();
     const [journalEntries, setJournalEntries] = useState([]);
     const [moodRating, setMoodRating] = useState(null);
     const [editMode, setEditMode] = useState({});
@@ -10,8 +13,8 @@ function DayDetail() {
     const [newJournalHeader, setNewJournalHeader] = useState('');
     const [newJournalText, setNewJournalText] = useState('');
     const [isAddingJournal, setIsAddingJournal] = useState(false); // State for toggling new journal entry inputs
-    const [isEditingMood, setIsEditingMood] = useState(false); // State for editing mood rating
-    const [newMoodRating, setNewMoodRating] = useState(null); // State for new mood rating
+    const [isEditingMood, setIsEditingMood] = useState(false);
+    const [newMoodRating, setNewMoodRating] = useState(moodRating);
 
     useEffect(() => {
         const fetchJournalEntries = async () => {
@@ -35,7 +38,6 @@ function DayDetail() {
                     return entryDate === date;
                 });
                 setMoodRating(mood.length ? mood[mood.length - 1].mood : null);
-                setNewMoodRating(mood.length ? mood[mood.length - 1].mood : null);
             }
         };
 
@@ -66,12 +68,16 @@ function DayDetail() {
         return formattedDate;
     };
 
-    const isFutureDate = (inputDate) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize today to midnight
-        const givenDate = new Date(inputDate.replace(/-/g, '\/'));
-        givenDate.setHours(0, 0, 0, 0); // Normalize input date to midnight
-        return givenDate > today;
+    const isFutureDate = (dateStr) => {
+        const today = new Date().setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateStr).setHours(0, 0, 0, 0);
+        return selectedDate > today;
+    };
+
+    const isToday = (dateStr) => {
+        const today = new Date().setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateStr).setHours(0, 0, 0, 0);
+        return selectedDate === today;
     };
 
     const handleEdit = (entryId, entry) => {
@@ -208,50 +214,68 @@ function DayDetail() {
     };
 
     const handleSaveMood = async () => {
-        if (isFutureDate(date)) {
-            console.error('Cannot save mood rating for future dates');
-            setIsEditingMood(false);
-            return;
-        }
-
         try {
             const response = await fetch('/api/mood-ratings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    mood: newMoodRating,
-                    created_at: date  // Ensure the created_at date is set correctly
-                }),
+                body: JSON.stringify({ mood: newMoodRating }),
             });
 
             if (!response.ok) {
-                throw new Error('Failed to save mood rating');
+                throw new Error('Failed to update mood rating');
             }
 
             setMoodRating(newMoodRating);
             setIsEditingMood(false);
         } catch (error) {
-            console.error('Error saving mood rating:', error);
+            console.error('Error updating mood rating:', error);
         }
     };
 
     const handleCancelMoodEdit = () => {
-        setNewMoodRating(moodRating);
         setIsEditingMood(false);
+        setNewMoodRating(moodRating);
+    };
+
+    const handlePrevDay = () => {
+        const prevDay = new Date(date);
+        prevDay.setDate(prevDay.getDate() - 1);
+        navigate(`/day/${prevDay.toISOString().split('T')[0]}`);
+    };
+
+    const handleNextDay = () => {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        navigate(`/day/${nextDay.toISOString().split('T')[0]}`);
+    };
+
+    const handleToday = () => {
+        const today = new Date().toISOString().split('T')[0];
+        navigate(`/day/${today}`);
     };
 
     return (
         <div>
+            <button onClick={handlePrevDay}><FontAwesomeIcon icon={faAngleLeft} /></button>
+            &nbsp;
+            <button 
+                onClick={handleToday} 
+                disabled={isToday(date.replace(/-/g, '\/'))} 
+                style={{ backgroundColor: isToday(date.replace(/-/g, '\/')) ? 'gray' : '#e7e7e7' }}>
+                Today
+            </button>
+            &nbsp;
+            <button onClick={handleNextDay}><FontAwesomeIcon icon={faAngleRight} /></button>
             <h1>{formatDate(date)}</h1>
             <h2>
                 Mood Rating: {moodRating ? `${moodRating}/5 ${getMoodEmoji(moodRating)}` : '(None)'}
-                {!isFutureDate(date) && !isEditingMood && <button style={{scale:'150%', marginLeft:'2em'}} onClick={handleEditMood}>Edit Mood</button>}
+                {!isFutureDate(date.replace(/-/g, '\/')) && !isEditingMood && <button style={{ scale: '150%', marginLeft: '2em' }} onClick={handleEditMood}>Edit Mood</button>}
             </h2>
             {isEditingMood && (
                 <div>
-                    <select style={{scale:'150%', marginLeft:'2em'}} value={newMoodRating} onChange={(e) => setNewMoodRating(Number(e.target.value))}>
+                    <select style={{ scale: '150%', marginLeft: '2em' }} value={newMoodRating} onChange={(e) => setNewMoodRating(Number(e.target.value))}>
                         <option value={1}>1 😔</option>
                         <option value={2}>2 🙁</option>
                         <option value={3}>3 😐</option>
@@ -259,9 +283,9 @@ function DayDetail() {
                         <option value={5}>5 😁</option>
                     </select>
                     &nbsp;
-                    <button style={{scale:'125%', marginLeft:'2em'}}  onClick={handleSaveMood}>Save</button>
+                    <button style={{ scale: '125%', marginLeft: '2em' }} onClick={handleSaveMood}>Save</button>
                     &nbsp;
-                    <button style={{scale:'125%', marginLeft:'2em'}} onClick={handleCancelMoodEdit}>Cancel</button>
+                    <button style={{ scale: '125%', marginLeft: '2em' }} onClick={handleCancelMoodEdit}>Cancel</button>
                 </div>
             )}
             <h2>Journal Entries:</h2>
@@ -298,7 +322,7 @@ function DayDetail() {
                 )}
                 <br></br>
                 {!isAddingJournal && (
-                    <button style={{scale:'150%', marginLeft:'3em'}} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
+                    <button style={{ scale: '150%', marginLeft: '3em' }} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
                 )}
                 {isAddingJournal && (
                     <div>
@@ -308,7 +332,7 @@ function DayDetail() {
                             value={newJournalHeader}
                             className="large-placeholder"
                             onChange={(e) => setNewJournalHeader(e.target.value)}
-                            style={{height:'1.5em', width:'15em' }}
+                            style={{ height: '1.5em', width: '15em' }}
                         />
                         <br></br>
                         <br></br>
@@ -317,13 +341,13 @@ function DayDetail() {
                             value={newJournalText}
                             className="large-placeholder"
                             onChange={(e) => setNewJournalText(e.target.value)}
-                            style={{ height: '12em', width:'18em' }}
+                            style={{ height: '12em', width: '18em' }}
                         />
                         <br></br>
                         <br></br>
-                        <button style={{scale:'150%', marginLeft:'1em'}} onClick={handleNewJournalSubmit}>Submit</button>
+                        <button style={{ scale: '150%', marginLeft: '1em' }} onClick={handleNewJournalSubmit}>Submit</button>
                         &nbsp; &nbsp; &nbsp;
-                        <button style={{scale:'150%', marginLeft:'1em'}} onClick={() => setIsAddingJournal(false)}>Cancel</button>
+                        <button style={{ scale: '150%', marginLeft: '1em' }} onClick={() => setIsAddingJournal(false)}>Cancel</button>
                     </div>
                 )}
             </div>

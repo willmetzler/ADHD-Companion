@@ -295,7 +295,7 @@ function Diary() {
                         </div>
                     ))
                 ) : (
-                    <p>No journal entries available for selected date</p>
+                    <p>Nothing to see here...</p>
                 )}
             </div>
         </div>
