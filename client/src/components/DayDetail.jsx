@@ -12,17 +12,20 @@ function DayDetail() {
     const [editedContent, setEditedContent] = useState({});
     const [newJournalHeader, setNewJournalHeader] = useState('');
     const [newJournalText, setNewJournalText] = useState('');
-    const [isAddingJournal, setIsAddingJournal] = useState(false); // State for toggling new journal entry inputs
+    const [isAddingJournal, setIsAddingJournal] = useState(false);
     const [isEditingMood, setIsEditingMood] = useState(false);
     const [newMoodRating, setNewMoodRating] = useState(moodRating);
+    const [todos, setTodos] = useState([]);
+    const [newTask, setNewTask] = useState('');
 
     useEffect(() => {
+        fetchTodos();
         const fetchJournalEntries = async () => {
             const response = await fetch('/api/journals');
             if (response.ok) {
                 const data = await response.json();
                 const filteredEntries = data.filter(entry => {
-                    const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
+                    const entryDate = new Date(entry.created_at.replace(/-/g, '\/')).toISOString().split('T')[0];
                     return entryDate === date;
                 });
                 setJournalEntries(filteredEntries);
@@ -34,7 +37,7 @@ function DayDetail() {
             if (response.ok) {
                 const data = await response.json();
                 const mood = data.filter(entry => {
-                    const entryDate = new Date(entry.created_at).toISOString().split('T')[0];
+                    const entryDate = new Date(entry.created_at.replace(/-/g, '\/')).toISOString().split('T')[0];
                     return entryDate === date;
                 });
                 setMoodRating(mood.length ? mood[mood.length - 1].mood : null);
@@ -62,6 +65,24 @@ function DayDetail() {
         }
     };
 
+    const getMoodColor = () => {
+        const mood = moodRating;
+        switch (mood) {
+            case 1:
+                return '#e35337'; // darkred
+            case 2:
+                return '#ef9c0e'; // orange
+            case 3:
+                return '#ece13b'; // yellow
+            case 4:
+                return '#afe48e'; // pale green
+            case 5:
+                return '#26e616'; // bright green
+            default:
+                return 'black'; // Default text color
+        }
+    };
+
     const formatDate = (inputDate) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         const formattedDate = new Date(inputDate.replace(/-/g, '\/')).toLocaleDateString('en-US', options);
@@ -70,13 +91,13 @@ function DayDetail() {
 
     const isFutureDate = (dateStr) => {
         const today = new Date().setHours(0, 0, 0, 0);
-        const selectedDate = new Date(dateStr).setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateStr.replace(/-/g, '\/')).setHours(0, 0, 0, 0);
         return selectedDate > today;
     };
 
     const isToday = (dateStr) => {
         const today = new Date().setHours(0, 0, 0, 0);
-        const selectedDate = new Date(dateStr).setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateStr.replace(/-/g, '\/')).setHours(0, 0, 0, 0);
         return selectedDate === today;
     };
 
@@ -160,21 +181,25 @@ function DayDetail() {
     };
 
     const handleDelete = async (entryId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this?");
+        if (!isConfirmed) return;
+    
         try {
             const response = await fetch(`/api/journals/${entryId}`, {
                 method: 'DELETE'
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to delete entry');
             }
-
+    
             const updatedEntries = journalEntries.filter(entry => entry.id !== entryId);
             setJournalEntries(updatedEntries);
         } catch (error) {
             console.error('Error deleting entry:', error);
         }
     };
+    
 
     const handleNewJournalSubmit = async () => {
         try {
@@ -186,7 +211,7 @@ function DayDetail() {
                 body: JSON.stringify({
                     journal_header: newJournalHeader,
                     journal_text: newJournalText,
-                    created_at: date  // Set the created_at date to the selected date
+                    created_at: date
                 }),
             });
 
@@ -196,14 +221,14 @@ function DayDetail() {
 
             const newEntry = await response.json();
             setJournalEntries([...journalEntries, {
-                id: newEntry.id,  // Assuming newEntry contains the id
+                id: newEntry.id,
                 journal_header: newJournalHeader,
                 journal_text: newJournalText,
                 created_at: date
             }]);
             setNewJournalHeader('');
             setNewJournalText('');
-            setIsAddingJournal(false); // Hide inputs after submission
+            setIsAddingJournal(false);
         } catch (error) {
             console.error('Error submitting new journal entry:', error);
         }
@@ -220,7 +245,10 @@ function DayDetail() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ mood: newMoodRating }),
+                body: JSON.stringify({ 
+                    mood: newMoodRating,
+                    created_at: date // Ensure the date is included in the request
+                }),
             });
 
             if (!response.ok) {
@@ -236,7 +264,7 @@ function DayDetail() {
 
     const handleCancelMoodEdit = () => {
         setIsEditingMood(false);
-        setNewMoodRating(moodRating);
+        setNewMoodRating(moodRating); // Reset the newMoodRating to the current mood rating
     };
 
     const handlePrevDay = () => {
@@ -256,6 +284,93 @@ function DayDetail() {
         navigate(`/day/${today}`);
     };
 
+    const fetchTodos = () => {
+        fetch('/api/todos')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to fetch todos');
+                }
+            })
+            .then(data => {
+                const filteredTodos = data.filter(todo => {
+                    const todoDate = new Date(todo.created_at.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    const selectedDate = new Date(date.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    return todoDate === selectedDate;
+                });
+                setTodos(filteredTodos);
+            })
+            .catch(error => {
+                console.error('Error fetching todos:', error);
+            });
+    };
+
+    const handleTaskSubmit = async () => {
+        if (newTask.trim() === '') return;
+        try {
+            const response = await fetch('/api/todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ task_text: newTask, created_at: date })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add task');
+            }
+
+            const newTodo = await response.json();
+            setTodos([...todos, newTodo]);
+            setNewTask('');
+        } catch (error) {
+            console.error('Error adding task:', error);
+        }
+    };
+
+    const handleToggleComplete = async (todoId) => {
+        const todo = todos.find(t => t.id === todoId);
+        if (!todo) return;
+        try {
+            const response = await fetch(`/api/todos/${todoId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ completed: !todo.completed })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update task');
+            }
+
+            setTodos(todos.map(t => (t.id === todoId ? { ...t, completed: !t.completed } : t)));
+        } catch (error) {
+            console.error('Error updating task:', error);
+        }
+    };
+
+    const handleDeleteTask = async (todoId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this?");
+        if (!isConfirmed) return;
+    
+        try {
+            const response = await fetch(`/api/todos/${todoId}`, {
+                method: 'DELETE'
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to delete task');
+            }
+    
+            setTodos(todos.filter(t => t.id !== todoId));
+        } catch (error) {
+            console.error('Error deleting task:', error);
+        }
+    };
+    
+
     return (
         <div>
             <button onClick={handlePrevDay}><FontAwesomeIcon icon={faAngleLeft} /></button>
@@ -270,12 +385,13 @@ function DayDetail() {
             <button onClick={handleNextDay}><FontAwesomeIcon icon={faAngleRight} /></button>
             <h1>{formatDate(date)}</h1>
             <h2>
-                Mood Rating: {moodRating ? `${moodRating}/5 ${getMoodEmoji(moodRating)}` : '(None)'}
-                {!isFutureDate(date.replace(/-/g, '\/')) && !isEditingMood && <button style={{ scale: '150%', marginLeft: '2em' }} onClick={handleEditMood}>Edit Mood</button>}
+                Mood Rating: <span style={{ color: getMoodColor(), WebkitTextStroke: '1px black', textStroke: '1px black' }}>{moodRating ? `${moodRating}/5 ${getMoodEmoji(moodRating)}` : '(None)'}</span>
+                {!isFutureDate(date.replace(/-/g, '\/')) && !isEditingMood && <button style={{ scale: '120%', marginLeft: '1em' }} onClick={handleEditMood}>Edit Mood</button>}
             </h2>
             {isEditingMood && (
                 <div>
-                    <select style={{ scale: '150%', marginLeft: '2em' }} value={newMoodRating} onChange={(e) => setNewMoodRating(Number(e.target.value))}>
+                    <select style={{ scale: '120%', marginLeft: '1.5em' }} value={newMoodRating || ''} onChange={(e) => setNewMoodRating(Number(e.target.value))}>
+                        <option value="" disabled>Select Mood</option>
                         <option value={1}>1 😔</option>
                         <option value={2}>2 🙁</option>
                         <option value={3}>3 😐</option>
@@ -283,9 +399,9 @@ function DayDetail() {
                         <option value={5}>5 😁</option>
                     </select>
                     &nbsp;
-                    <button style={{ scale: '125%', marginLeft: '2em' }} onClick={handleSaveMood}>Save</button>
+                    <button style={{ scale: '115%', marginLeft: '1.5em' }} onClick={handleSaveMood}>Save</button>
                     &nbsp;
-                    <button style={{ scale: '125%', marginLeft: '2em' }} onClick={handleCancelMoodEdit}>Cancel</button>
+                    <button style={{ scale: '115%', marginLeft: '1em' }} onClick={handleCancelMoodEdit}>Cancel</button>
                 </div>
             )}
             <h2>Journal Entries:</h2>
@@ -310,9 +426,9 @@ function DayDetail() {
                                 <React.Fragment>
                                     <h3>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
-                                    <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
+                                    <button style={{ scale: '125%', marginLeft:'0.5em'}} onClick={() => handleEdit(entry.id, entry)}>Edit</button>
                                     &nbsp;
-                                    <button onClick={() => handleDelete(entry.id)}>Delete</button>
+                                    <button style={{ scale: '125%', marginLeft:'1.5em', marginBottom:'0.25em'}} onClick={() => handleDelete(entry.id)}>Delete</button>
                                 </React.Fragment>
                             )}
                         </div>
@@ -320,9 +436,8 @@ function DayDetail() {
                 ) : (
                     <p>Nothing to see here...</p>
                 )}
-                <br></br>
                 {!isAddingJournal && (
-                    <button style={{ scale: '150%', marginLeft: '3em' }} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
+                    <button style={{ scale: '120%', marginLeft: '1.5em' }} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
                 )}
                 {isAddingJournal && (
                     <div>
@@ -350,6 +465,41 @@ function DayDetail() {
                         <button style={{ scale: '150%', marginLeft: '1em' }} onClick={() => setIsAddingJournal(false)}>Cancel</button>
                     </div>
                 )}
+            </div>
+            <div className='day-task-container'>
+                <h2>To-do:</h2>
+                <div className='task-input'>
+                    <input
+                        type="text"
+                        placeholder="Add a new task"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                    />
+                    &nbsp;
+                    <button onClick={handleTaskSubmit}>Add</button>
+                </div>
+                <div className='task-container'>
+                    <ul style={{ listStyleType: 'none', paddingLeft:'1em' }}>
+                        {todos.length > 0 ? (
+                            todos.map(todo => (
+                                <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                                    <label className="custom-checkbox">
+                                        <input
+                                            type="checkbox"
+                                            checked={todo.completed}
+                                            onChange={() => handleToggleComplete(todo.id)}
+                                        />
+                                        <span className="checkmark"></span>
+                                    </label>
+                                    {todo.task_text}
+                                    <button style={{scale:'85%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
+                                </li>
+                            ))
+                        ) : (
+                            <p>Nothing to see here...</p>
+                        )}
+                    </ul>
+                </div>
             </div>
         </div>
     );

@@ -109,7 +109,7 @@ function Todo() {
     };
 
     const groupedTodos = todos.reduce((acc, todo) => {
-        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toLocaleDateString('en-CA');
+        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toLocaleDateString('en-US');
         if (!acc[localDate]) {
             acc[localDate] = [];
         }
@@ -199,15 +199,17 @@ function Todo() {
                         <p style={{marginLeft:'1em'}}>{formatDateTime(date)}</p>
                         <ul style={{ listStyleType: 'none', paddingLeft:'1em' }}>
                             {todos.map(todo => (
-                                <li key={todo.id} style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
-                                    <input
-                                        type="checkbox"
-                                        checked={todo.completed}
-                                        onChange={() => handleToggleComplete(todo.id)}
-                                        style={{scale:'125%', marginRight:'0.5em'}}
-                                    />
+                                <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                                    <label className="custom-checkbox">
+                                        <input
+                                            type="checkbox"
+                                            checked={todo.completed}
+                                            onChange={() => handleToggleComplete(todo.id)}
+                                        />
+                                        <span className="checkmark"></span>
+                                    </label>
                                     {todo.task_text}
-                                    <button style={{scale:'80%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
+                                    <button style={{scale:'85%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
                                 </li>
                             ))}
                         </ul>

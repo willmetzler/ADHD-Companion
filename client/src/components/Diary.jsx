@@ -286,9 +286,9 @@ function Diary() {
                                     <h3>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
                                     <p>{formatDateTime(entry.created_at)}</p>
-                                    <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
+                                    <button style={{ scale: '125%', marginLeft:'0.5em'}} onClick={() => handleEdit(entry.id, entry)}>Edit</button>
                                     &nbsp; 
-                                    <button onClick={() => handleDelete(entry.id)}>Delete</button> 
+                                    <button style={{ scale: '125%', marginLeft:'1.25em', marginBottom:'0.25em'}} onClick={() => handleDelete(entry.id)}>Delete</button> 
                                 </>
                             )}
                             <div className="diary-mood" style={{ backgroundColor: getMoodColor(new Date(entry.created_at).toISOString().split('T')[0]) }}></div>

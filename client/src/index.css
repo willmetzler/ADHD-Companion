@@ -42,6 +42,12 @@ body {
 
 .mood-button {
   scale: 150%;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mood-button.selected {
+  transform: translateY(-3px); /* Slight indent */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Drop shadow */
 }
 
 .journal-text-field {
@@ -50,7 +56,7 @@ body {
 }
 
 .journal-text-field::placeholder {
-  font-size: 1.5em;
+  font-size: 1.25em;
 }
 
 .diary-content {
@@ -193,13 +199,8 @@ body {
   padding: 0.5em;
 }
 
-.day-journal-container {
-  height: calc(100vh - 13em);
-  overflow-y: auto;
-}
-
 .large-placeholder::placeholder {
-  font-size: 1.5em;
+  font-size: 1.25em;
 }
 
 .day-content {
@@ -238,4 +239,55 @@ body {
   margin-top: 1em;
   border-radius: 5%;
   background-color: white;
+}
+
+.custom-checkbox {
+  position: relative;
+  display: inline-block;
+  margin-right: 1.75em;
+  vertical-align: top;
+}
+
+.custom-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.custom-checkbox .checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #ccc;
+  border-radius: 3px;
+  border: black, 0.5px, solid;
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+  background-color: green;
+}
+
+.custom-checkbox .checkmark::after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .checkmark::after {
+  display: block;
+}
+
+.custom-checkbox .checkmark::after {
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
 }
