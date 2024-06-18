@@ -291,3 +291,22 @@ body {
   border-width: 0 3px 3px 0;
   transform: rotate(45deg);
 }
+
+.task-container {
+  position: relative;
+  padding-right: 2em;
+}
+
+.toggle-button {
+  position: absolute;
+  top: 1em;
+  right: 1em;
+}
+
+.hidden-button {
+  display: none;
+}
+
+.visible-button {
+  display: inline;
+}

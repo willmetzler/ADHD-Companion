@@ -75,22 +75,6 @@ function Home() {
         }
     };
 
-    const handleDeleteTask = async (todoId) => {
-        try {
-            const response = await fetch(`/api/todos/${todoId}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to delete task');
-            }
-
-            setTodos(todos.filter(t => t.id !== todoId));
-        } catch (error) {
-            console.error('Error deleting task:', error);
-        }
-    };
-
     const handleMoodChange = (newMood) => {
         setMood(newMood);
     };
@@ -226,7 +210,8 @@ function Home() {
                                         <span className="checkmark"></span>
                                     </label>
                                     {todo.task_text}
-                                    <button style={{scale:'85%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
+                                    <br></br>
+                                    <br></br>
                                 </li>
                             ))
                         ) : (

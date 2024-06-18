@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faAngleLeft,faPenToSquare, faTrashCan, faBars } from '@fortawesome/free-solid-svg-icons';
 
 function Todo() {
     const [todos, setTodos] = useState([]);
@@ -9,6 +9,11 @@ function Todo() {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedDate, setSelectedDate] = useState(null); 
     const [showMonthViewButton, setShowMonthViewButton] = useState(false);
+    const [taskEditMode, setTaskEditMode] = useState({});
+    const [editedTaskContent, setEditedTaskContent] = useState({});
+    const [visibleTasks, setVisibleTasks] = useState({});
+
+
 
     useEffect(() => {
         fetchTodos();
@@ -76,21 +81,80 @@ function Todo() {
         }
     };
 
+    const handleEditTask = (taskId, task) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: true
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: task.task_text
+        }));
+    };
+    
+    const handleSaveTaskEdit = async (taskId) => {
+        try {
+            const response = await fetch(`/api/todos/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ task_text: editedTaskContent[taskId] })
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to save edited task');
+            }
+    
+            setTodos(todos.map(task => 
+                task.id === taskId ? { ...task, task_text: editedTaskContent[taskId] } : task
+            ));
+    
+            setTaskEditMode(prevState => ({
+                ...prevState,
+                [taskId]: false
+            }));
+        } catch (error) {
+            console.error('Error saving edited task:', error);
+        }
+    };
+    
+    const handleCancelTaskEdit = (taskId) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: false
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: ''
+        }));
+    };
+    
+    const handleTaskContentChange = (taskId, value) => {
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: value
+        }));
+    };
+    
     const handleDeleteTask = async (todoId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this?");
+        if (!isConfirmed) return;
+    
         try {
             const response = await fetch(`/api/todos/${todoId}`, {
                 method: 'DELETE'
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to delete task');
             }
-
+    
             setTodos(todos.filter(t => t.id !== todoId));
         } catch (error) {
             console.error('Error deleting task:', error);
         }
-    };
+    };    
 
     const getMonthName = (monthIndex) => {
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -165,6 +229,14 @@ function Todo() {
         setShowMonthViewButton(true); 
     };
 
+    const handleToggleTaskVisibility = (date) => {
+        setVisibleTasks(prevState => ({
+            ...prevState,
+            [date]: !prevState[date]
+        }));
+    };
+    
+
     return (
         <div>
             <h1>To-Do List</h1>
@@ -196,10 +268,16 @@ function Todo() {
             {sortedTodos.length > 0 ? (
                 sortedTodos.map(([date, todos]) => (
                     <div className="task-container" key={date}>
-                        <p style={{marginLeft:'1em'}}>{formatDateTime(date)}</p>
-                        <ul style={{ listStyleType: 'none', paddingLeft:'1em' }}>
+                        <button 
+                            className="toggle-button"
+                            onClick={() => handleToggleTaskVisibility(date)}
+                        >
+                            <FontAwesomeIcon icon={faBars} />
+                        </button>
+                        <p style={{ marginLeft: '1em' }}>{formatDateTime(date)}</p>
+                        <ul style={{ listStyleType: 'none', paddingLeft: '1em' }}>
                             {todos.map(todo => (
-                                <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                                <li key={todo.id} style={{ marginTop: '0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
                                     <label className="custom-checkbox">
                                         <input
                                             type="checkbox"
@@ -208,8 +286,49 @@ function Todo() {
                                         />
                                         <span className="checkmark"></span>
                                     </label>
-                                    {todo.task_text}
-                                    <button style={{scale:'85%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
+                                    {taskEditMode[todo.id] ? (
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={editedTaskContent[todo.id] || ''} 
+                                                onChange={(e) => handleTaskContentChange(todo.id, e.target.value)} 
+                                            />
+                                            <button 
+                                                className="visible-button" 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleSaveTaskEdit(todo.id)}
+                                            >
+                                                Save
+                                            </button>
+                                            <button 
+                                                className="visible-button" 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleCancelTaskEdit(todo.id)}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {todo.task_text}
+                                            <button 
+                                                className={`edit-button ${visibleTasks[date] ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleEditTask(todo.id, todo)}
+                                            >
+                                                <FontAwesomeIcon icon={faPenToSquare} />
+                                            </button>
+                                            <button 
+                                                className={`delete-button ${visibleTasks[date] ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%'}} 
+                                                onClick={() => handleDeleteTask(todo.id)}
+                                            >
+                                                <FontAwesomeIcon icon={faTrashCan} />
+                                            </button>
+                                            <br></br>
+                                            <br></br>
+                                        </>
+                                    )}
                                 </li>
                             ))}
                         </ul>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons';
+import { faAngleLeft, faAngleRight, faPenToSquare, faTrashCan, faBars } from '@fortawesome/free-solid-svg-icons';
 
 function DayDetail() {
     const { date } = useParams();
@@ -15,8 +15,15 @@ function DayDetail() {
     const [isAddingJournal, setIsAddingJournal] = useState(false);
     const [isEditingMood, setIsEditingMood] = useState(false);
     const [newMoodRating, setNewMoodRating] = useState(moodRating);
+
     const [todos, setTodos] = useState([]);
     const [newTask, setNewTask] = useState('');
+
+    const [taskEditMode, setTaskEditMode] = useState({});
+    const [editedTaskContent, setEditedTaskContent] = useState({});
+
+    const [visibleJournalEntries, setVisibleJournalEntries] = useState({});
+    const [visibleTasks, setVisibleTasks] = useState(false); // Updated to handle all tasks
 
     useEffect(() => {
         fetchTodos();
@@ -183,23 +190,22 @@ function DayDetail() {
     const handleDelete = async (entryId) => {
         const isConfirmed = window.confirm("Are you sure you want to delete this?");
         if (!isConfirmed) return;
-    
+
         try {
             const response = await fetch(`/api/journals/${entryId}`, {
                 method: 'DELETE'
             });
-    
+
             if (!response.ok) {
                 throw new Error('Failed to delete entry');
             }
-    
+
             const updatedEntries = journalEntries.filter(entry => entry.id !== entryId);
             setJournalEntries(updatedEntries);
         } catch (error) {
             console.error('Error deleting entry:', error);
         }
     };
-    
 
     const handleNewJournalSubmit = async () => {
         try {
@@ -354,21 +360,88 @@ function DayDetail() {
     const handleDeleteTask = async (todoId) => {
         const isConfirmed = window.confirm("Are you sure you want to delete this?");
         if (!isConfirmed) return;
-    
+
         try {
             const response = await fetch(`/api/todos/${todoId}`, {
                 method: 'DELETE'
             });
-    
+
             if (!response.ok) {
                 throw new Error('Failed to delete task');
             }
-    
+
             setTodos(todos.filter(t => t.id !== todoId));
         } catch (error) {
             console.error('Error deleting task:', error);
         }
     };
+
+    const handleEditTask = (taskId, task) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: true
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: task.task_text
+        }));
+    };
+
+    const handleSaveTaskEdit = async (taskId) => {
+        try {
+            const response = await fetch(`/api/todos/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ task_text: editedTaskContent[taskId] })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save edited task');
+            }
+
+            setTodos(todos.map(task => 
+                task.id === taskId ? { ...task, task_text: editedTaskContent[taskId] } : task
+            ));
+
+            setTaskEditMode(prevState => ({
+                ...prevState,
+                [taskId]: false
+            }));
+        } catch (error) {
+            console.error('Error saving edited task:', error);
+        }
+    };
+
+    const handleCancelTaskEdit = (taskId) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: false
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: ''
+        }));
+    };
+
+    const handleTaskContentChange = (taskId, value) => {
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: value
+        }));
+    };
+
+    const handleToggleJournalEntryVisibility = (entryId) => {
+        setVisibleJournalEntries(prevState => ({
+            ...prevState,
+            [entryId]: !prevState[entryId]
+        }));
+    };
+
+    const handleToggleTaskVisibility = () => {
+        setVisibleTasks(prevState => !prevState);
+    };   
     
 
     return (
@@ -409,6 +482,12 @@ function DayDetail() {
                 {journalEntries.length > 0 ? (
                     journalEntries.map(entry => (
                         <div className='day-content' key={entry.id}>
+                            <button 
+                                className="toggle-button"
+                                onClick={() => handleToggleJournalEntryVisibility(entry.id)}
+                            >
+                                <FontAwesomeIcon icon={faBars} />
+                            </button>
                             {editMode[entry.id] ? (
                                 <div>
                                     <br></br>
@@ -419,17 +498,27 @@ function DayDetail() {
                                     <br></br>
                                     <br></br>
                                     <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
-                                    &nbsp;
                                     <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
                                 </div>
                             ) : (
-                                <React.Fragment>
+                                <>
                                     <h3>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
-                                    <button style={{ scale: '125%', marginLeft:'0.5em'}} onClick={() => handleEdit(entry.id, entry)}>Edit</button>
-                                    &nbsp;
-                                    <button style={{ scale: '125%', marginLeft:'1.5em', marginBottom:'0.25em'}} onClick={() => handleDelete(entry.id)}>Delete</button>
-                                </React.Fragment>
+                                    <button 
+                                        className={`edit-button ${visibleJournalEntries[entry.id] ? 'visible-button' : 'hidden-button'}`} 
+                                        style={{ scale: '125%', marginLeft:'0.5em' }} 
+                                        onClick={() => handleEdit(entry.id, entry)}
+                                    >
+                                        <FontAwesomeIcon icon={faPenToSquare} />
+                                    </button>
+                                    <button 
+                                        className={`delete-button ${visibleJournalEntries[entry.id] ? 'visible-button' : 'hidden-button'}`} 
+                                        style={{ scale: '125%', marginLeft:'1.5em', marginBottom:'0.25em' }} 
+                                        onClick={() => handleDelete(entry.id)}
+                                    >
+                                        <FontAwesomeIcon icon={faTrashCan} />
+                                    </button>
+                                </>
                             )}
                         </div>
                     ))
@@ -479,10 +568,16 @@ function DayDetail() {
                     <button onClick={handleTaskSubmit}>Add</button>
                 </div>
                 <div className='task-container'>
-                    <ul style={{ listStyleType: 'none', paddingLeft:'1em' }}>
+                    <button 
+                        className="toggle-button"
+                        onClick={handleToggleTaskVisibility}
+                    >
+                        <FontAwesomeIcon icon={faBars} />
+                    </button>
+                    <ul style={{ listStyleType: 'none', marginTop:'2.5em', paddingLeft:'1em' }}>
                         {todos.length > 0 ? (
                             todos.map(todo => (
-                                <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
+                                <li key={todo.id} style={{ marginTop: '0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
                                     <label className="custom-checkbox">
                                         <input
                                             type="checkbox"
@@ -491,8 +586,37 @@ function DayDetail() {
                                         />
                                         <span className="checkmark"></span>
                                     </label>
-                                    {todo.task_text}
-                                    <button style={{scale:'85%', marginLeft:'0.5em'}}onClick={() => handleDeleteTask(todo.id)}>X</button>
+                                    {taskEditMode[todo.id] ? (
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={editedTaskContent[todo.id] || ''} 
+                                                onChange={(e) => handleTaskContentChange(todo.id, e.target.value)} 
+                                            />
+                                            <button style={{ scale: '85%', marginLeft: '0.5em' }} onClick={() => handleSaveTaskEdit(todo.id)}>Save</button>
+                                            <button style={{ scale: '85%', marginLeft: '0.5em' }} onClick={() => handleCancelTaskEdit(todo.id)}>Cancel</button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {todo.task_text}
+                                            <button 
+                                                className={`edit-button ${visibleTasks ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleEditTask(todo.id, todo)}
+                                            >
+                                                <FontAwesomeIcon icon={faPenToSquare} />
+                                            </button>
+                                            <button 
+                                                className={`delete-button ${visibleTasks ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleDeleteTask(todo.id)}
+                                            >
+                                                <FontAwesomeIcon icon={faTrashCan} />
+                                            </button>
+                                            <br></br>
+                                            <br></br>
+                                        </>
+                                    )}
                                 </li>
                             ))
                         ) : (
@@ -503,6 +627,7 @@ function DayDetail() {
             </div>
         </div>
     );
+    
 }
 
 export default DayDetail;
