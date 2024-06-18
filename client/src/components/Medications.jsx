@@ -230,6 +230,7 @@ function Medications() {
                                         />
                                         <br /><br />
                                         <button onClick={() => handleSaveEdit(medication.id)}>Save</button>
+                                        &nbsp;
                                         <button onClick={() => handleCancelEdit(medication.id)}>Cancel</button>
                                     </div>
                                 ) : (
