@@ -250,8 +250,8 @@ function Todo() {
                 )}
                 <button className='todo-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} /></button>
             </div>
-            <div>
-                <label htmlFor="datePicker">Select Date:</label>
+            <div style={{marginLeft:'1.5em'}}>
+                <label htmlFor="datePicker">Select Date: </label>
                 <input type="date" id="datePicker" value={selectedDate || ''} onChange={handleDateChange} />
             </div>
             <br></br>
@@ -259,11 +259,13 @@ function Todo() {
                 <input
                     type="text"
                     placeholder="Add a new task"
+                    className='task-input-bar'
                     value={newTask}
                     onChange={(e) => setNewTask(e.target.value)}
+                    style={{height:'1.5em', width:'15em', marginLeft:'1em' }}
                 />
                 &nbsp;
-                <button onClick={handleTaskSubmit}>Add</button>
+                <button style={{scale:'125%', marginLeft:'0.25em'}} onClick={handleTaskSubmit}>Add</button>
             </div>
             {sortedTodos.length > 0 ? (
                 sortedTodos.map(([date, todos]) => (

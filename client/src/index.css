@@ -203,6 +203,10 @@ body {
   font-size: 1.25em;
 }
 
+.task-input-bar::placeholder {
+  font-size: 1.25em;
+}
+
 .day-content {
   border: 2px, solid, black;
   border-radius: 5%;
@@ -229,10 +233,10 @@ body {
   margin-bottom:0.25em;
 }
 
-.task-input {
-  margin-left: 2.5em;
+/* .task-input {
+  margin-left: 1em;
   margin-top: 1em;
-}
+} */
 
 .task-container {
   border: 2px, solid, black;

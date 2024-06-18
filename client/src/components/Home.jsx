@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {faPenToSquare, faTrashCan, faBars } from '@fortawesome/free-solid-svg-icons';
+
 
 function Home() {
     const [mood, setMood] = useState(null); 
@@ -6,6 +9,11 @@ function Home() {
     const [journalText, setJournalText] = useState('');
     const [todos, setTodos] = useState([]);
     const [newTask, setNewTask] = useState('');
+
+    const [taskEditMode, setTaskEditMode] = useState({});
+    const [editedTaskContent, setEditedTaskContent] = useState({});
+    const [visibleTasks, setVisibleTasks] = useState(false);
+
 
     useEffect(() => {
         fetchTodos();
@@ -123,8 +131,68 @@ function Home() {
                 console.error('Error submitting journal entry:', error);
             });
     };
-    
 
+    const handleEditTask = (taskId, task) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: true
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: task.task_text
+        }));
+    };
+    
+    const handleSaveTaskEdit = async (taskId) => {
+        try {
+            const response = await fetch(`/api/todos/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ task_text: editedTaskContent[taskId] })
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to save edited task');
+            }
+    
+            setTodos(todos.map(task => 
+                task.id === taskId ? { ...task, task_text: editedTaskContent[taskId] } : task
+            ));
+    
+            setTaskEditMode(prevState => ({
+                ...prevState,
+                [taskId]: false
+            }));
+        } catch (error) {
+            console.error('Error saving edited task:', error);
+        }
+    };
+    
+    const handleCancelTaskEdit = (taskId) => {
+        setTaskEditMode(prevState => ({
+            ...prevState,
+            [taskId]: false
+        }));
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: ''
+        }));
+    };
+    
+    const handleTaskContentChange = (taskId, value) => {
+        setEditedTaskContent(prevState => ({
+            ...prevState,
+            [taskId]: value
+        }));
+    };
+    
+    const handleToggleTaskVisibility = () => {
+        setVisibleTasks(prevState => !prevState);
+    };
+    
+    
     return (
         <div className='home-container'>
             <div>
@@ -190,14 +258,22 @@ function Home() {
                     <input
                         type="text"
                         placeholder="Add a new task"
+                        className='task-input-bar'
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
+                        style={{height:'1.5em', width:'15em', marginLeft:'1em' }}
                     />
                     &nbsp;
-                    <button onClick={handleTaskSubmit}>Add</button>
+                    <button style={{scale:'125%', marginLeft:'0.25em'}} onClick={handleTaskSubmit}>Add</button>
                 </div>
                 <div className='task-container'>
-                    <ul style={{ listStyleType: 'none', paddingLeft:'1em' }}>
+                    <button 
+                        className="toggle-button"
+                        onClick={handleToggleTaskVisibility}
+                    >
+                        <FontAwesomeIcon icon={faBars} />
+                    </button>
+                    <ul style={{ listStyleType: 'none', paddingLeft:'1em', marginTop:'2.5em' }}>
                         {todos.length > 0 ? (
                             todos.map(todo => (
                                 <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
@@ -209,7 +285,35 @@ function Home() {
                                         />
                                         <span className="checkmark"></span>
                                     </label>
-                                    {todo.task_text}
+                                    {taskEditMode[todo.id] ? (
+                                        <div>
+                                            <input 
+                                                type="text" 
+                                                value={editedTaskContent[todo.id] || ''} 
+                                                onChange={(e) => handleTaskContentChange(todo.id, e.target.value)} 
+                                            />
+                                            <button style={{ scale: '85%', marginLeft: '0.5em' }} onClick={() => handleSaveTaskEdit(todo.id)}>Save</button>
+                                            <button style={{ scale: '85%', marginLeft: '0.5em' }} onClick={() => handleCancelTaskEdit(todo.id)}>Cancel</button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {todo.task_text}
+                                            <button 
+                                                className={`edit-button ${visibleTasks ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleEditTask(todo.id, todo)}
+                                            >
+                                                <FontAwesomeIcon icon={faPenToSquare} />
+                                            </button>
+                                            <button 
+                                                className={`delete-button ${visibleTasks ? 'visible-button' : 'hidden-button'}`} 
+                                                style={{ scale: '85%', marginLeft: '0.5em' }} 
+                                                onClick={() => handleDeleteTask(todo.id)}
+                                            >
+                                                <FontAwesomeIcon icon={faTrashCan} />
+                                            </button>
+                                        </>
+                                    )}
                                     <br></br>
                                     <br></br>
                                 </li>
@@ -222,6 +326,7 @@ function Home() {
             </div>
         </div>
     );
+    
 }
 
 export default Home;

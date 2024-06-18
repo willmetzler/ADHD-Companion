@@ -23,7 +23,7 @@ function DayDetail() {
     const [editedTaskContent, setEditedTaskContent] = useState({});
 
     const [visibleJournalEntries, setVisibleJournalEntries] = useState({});
-    const [visibleTasks, setVisibleTasks] = useState(false); // Updated to handle all tasks
+    const [visibleTasks, setVisibleTasks] = useState(false);
 
     useEffect(() => {
         fetchTodos();
@@ -301,8 +301,8 @@ function DayDetail() {
             })
             .then(data => {
                 const filteredTodos = data.filter(todo => {
-                    const todoDate = new Date(todo.created_at.replace(/-/g, '\/')).toLocaleDateString('en-US');
-                    const selectedDate = new Date(date.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    const todoDate = new Date(todo.created_at).toISOString().split('T')[0];
+                    const selectedDate = new Date(date).toISOString().split('T')[0];
                     return todoDate === selectedDate;
                 });
                 setTodos(filteredTodos);
@@ -311,6 +311,7 @@ function DayDetail() {
                 console.error('Error fetching todos:', error);
             });
     };
+    
 
     const handleTaskSubmit = async () => {
         if (newTask.trim() === '') return;
@@ -320,13 +321,16 @@ function DayDetail() {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ task_text: newTask, created_at: date })
+                body: JSON.stringify({ 
+                    task_text: newTask, 
+                    created_at: new Date(date).toISOString() // Ensure the correct date is set
+                })
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to add task');
             }
-
+    
             const newTodo = await response.json();
             setTodos([...todos, newTodo]);
             setNewTask('');
@@ -334,6 +338,8 @@ function DayDetail() {
             console.error('Error adding task:', error);
         }
     };
+    
+    
 
     const handleToggleComplete = async (todoId) => {
         const todo = todos.find(t => t.id === todoId);

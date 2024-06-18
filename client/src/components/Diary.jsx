@@ -266,7 +266,7 @@ function Diary() {
                 )}
             </div>
             <br />
-            <label htmlFor="datePicker">Select Date:</label>
+            <label style={{marginLeft:'1.5em'}} htmlFor="datePicker">Select Date: </label>
             <input type="date" id="datePicker" value={selectedDate || ''} onChange={handleDateChange} />
             <br />
             <br />
