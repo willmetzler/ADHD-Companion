@@ -50,18 +50,20 @@ function Medications() {
             [medicationId]: true
         }));
         const medicationToEdit = medications.find(med => med.id === medicationId);
+        const formattedDate = new Date(medicationToEdit.renew_date).toISOString().split('T')[0]; // Ensure renew_date is in YYYY-MM-DD format
         setEditedMedications(prevState => ({
             ...prevState,
             [medicationId]: {
                 drug_name: medicationToEdit.drug_name,
                 dosage: medicationToEdit.dosage,
                 prescriber: medicationToEdit.prescriber,
-                renew_date: medicationToEdit.renew_date  // Keep renew_date as a string for editing
+                renew_date: formattedDate  // Keep renew_date as a string for editing
             }
         }));
     };
 
     const handleSaveEdit = async (medicationId) => {
+        console.log('Saving medication:', medicationId); // Add logging for debugging
         try {
             const response = await fetch(`/api/medications/${medicationId}`, {
                 method: 'PUT',
@@ -75,16 +77,18 @@ function Medications() {
                 throw new Error('Failed to save edited medication');
             }
 
-            const updatedMedications = [...medications];
-            const updatedMedicationIndex = updatedMedications.findIndex(med => med.id === medicationId);
-            if (updatedMedicationIndex !== -1) {
-                updatedMedications[updatedMedicationIndex] = editedMedications[medicationId];
-                setMedications(updatedMedications);
-            }
+            const updatedMedications = medications.map(med =>
+                med.id === medicationId ? editedMedications[medicationId] : med
+            );
+            setMedications(updatedMedications);
 
             setEditMode(prevState => ({
                 ...prevState,
                 [medicationId]: false
+            }));
+            setEditedMedications(prevState => ({
+                ...prevState,
+                [medicationId]: {}
             }));
         } catch (error) {
             console.error('Error saving edited medication:', error);
@@ -150,8 +154,37 @@ function Medications() {
 
     const formatDate = (inputDate) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        const formattedDate = new Date(inputDate.replace(/-/g,'\/')).toLocaleDateString('en-US', options);
+        const formattedDate = new Date(inputDate.replace(/-/g, '\/')).toLocaleDateString('en-US', options);
         return formattedDate;
+    };
+
+    const handleExtendMedication = async (medicationId) => {
+        const medicationToExtend = medications.find(med => med.id === medicationId);
+        const currentRenewDate = new Date(medicationToExtend.renew_date);
+        const newRenewDate = new Date(currentRenewDate.setMonth(currentRenewDate.getMonth() + 1));
+        const formattedNewRenewDate = newRenewDate.toISOString().split('T')[0];
+
+        try {
+            const response = await fetch(`/api/medications/${medicationId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ...medicationToExtend, renew_date: formattedNewRenewDate })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to extend medication');
+            }
+
+            setMedications(prevMedications =>
+                prevMedications.map(med =>
+                    med.id === medicationId ? { ...med, renew_date: formattedNewRenewDate } : med
+                )
+            );
+        } catch (error) {
+            console.error('Error extending medication:', error);
+        }
     };
 
     return (
@@ -191,7 +224,6 @@ function Medications() {
                                         <br /><br />
                                         <input
                                             type='date'
-                                            placeholder='Renewal Date...'
                                             name='renew_date'
                                             value={editedMedications[medication.id]?.renew_date || ''}
                                             onChange={(e) => handleInputChange(e, medication.id)}
@@ -207,9 +239,11 @@ function Medications() {
                                         <div>Prescriber: {medication.prescriber}</div>
                                         <div>Renewal Date: {formatDate(medication.renew_date)}</div>
                                         <br />
-                                        <button style={{scale:'125%', marginLeft:'0.5em', marginBottom:'0.25em'}} onClick={() => handleEditMedication(medication.id)}>Edit</button>
+                                        <button style={{ scale: '125%', marginLeft: '0.5em', marginBottom: '0.25em' }} onClick={() => handleEditMedication(medication.id)}>Edit</button>
                                         &nbsp;
-                                        <button style={{scale:'125%', marginLeft:'1em', marginBottom:'0.25em'}} onClick={() => handleDeleteMedication(medication.id)}>Delete</button>
+                                        <button style={{ scale: '125%', marginLeft: '1em', marginBottom: '0.25em' }} onClick={() => handleDeleteMedication(medication.id)}>Delete</button>
+                                        &nbsp;
+                                        <button style={{ scale: '125%', marginLeft: '1em', marginBottom: '0.25em' }} onClick={() => handleExtendMedication(medication.id)}>Extend</button>
                                     </>
                                 )}
                             </div>
@@ -220,7 +254,7 @@ function Medications() {
             )}
 
             <div>
-                <button style={{scale:'125%', marginLeft:'2em'}} onClick={() => setShowAddMedicationForm(true)}>Add Prescription</button>
+                <button style={{ scale: '125%', marginLeft: '2em' }} onClick={() => setShowAddMedicationForm(true)}>Add Prescription</button>
             </div>
 
             {showAddMedicationForm && (
