@@ -210,3 +210,32 @@ body {
   background-color: white;
   position: relative;
 }
+
+.todo-buttons {
+  padding: 1em;
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+.todo-buttons:first-child {
+  margin-left: 0; 
+}
+
+#todobutt {
+  display: flex;
+  justify-content: center; 
+  margin-left:0.5em;
+  margin-bottom:0.25em;
+}
+
+.task-input {
+  margin-left: 2.5em;
+  margin-top: 1em;
+}
+
+.task-container {
+  border: 2px, solid, black;
+  margin-top: 1em;
+  border-radius: 5%;
+  background-color: white;
+}

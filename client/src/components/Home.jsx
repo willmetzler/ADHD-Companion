@@ -93,7 +93,7 @@ function Home() {
                 <br></br>
                 <button style={{scale:'125%', marginLeft:'1em'}} onClick={handleJournalSubmit}>Submit</button>
             </div>
-            <div className='task-container'>
+            <div>
                 <h2>Add a Task...</h2>
             </div>
         </div>
@@ -101,4 +101,3 @@ function Home() {
 }
 
 export default Home;
-
