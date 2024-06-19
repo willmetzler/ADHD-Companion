@@ -301,8 +301,8 @@ function DayDetail() {
             })
             .then(data => {
                 const filteredTodos = data.filter(todo => {
-                    const todoDate = new Date(todo.created_at).toISOString().split('T')[0];
-                    const selectedDate = new Date(date).toISOString().split('T')[0];
+                    const todoDate = new Date(todo.created_at.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    const selectedDate = new Date(date.replace(/-/g, '\/')).toLocaleDateString('en-US');
                     return todoDate === selectedDate;
                 });
                 setTodos(filteredTodos);
@@ -310,7 +310,7 @@ function DayDetail() {
             .catch(error => {
                 console.error('Error fetching todos:', error);
             });
-    };
+    };    
     
 
     const handleTaskSubmit = async () => {
@@ -323,7 +323,7 @@ function DayDetail() {
                 },
                 body: JSON.stringify({ 
                     task_text: newTask, 
-                    created_at: new Date(date).toISOString() // Ensure the correct date is set
+                    created_at: new Date(date).toISOString()
                 })
             });
     
@@ -573,16 +573,16 @@ function DayDetail() {
                     &nbsp;
                     <button onClick={handleTaskSubmit}>Add</button>
                 </div>
-                <div className='task-container'>
-                    <button 
-                        className="toggle-button"
-                        onClick={handleToggleTaskVisibility}
-                    >
-                        <FontAwesomeIcon icon={faBars} />
-                    </button>
-                    <ul style={{ listStyleType: 'none', marginTop:'2.5em', paddingLeft:'1em' }}>
-                        {todos.length > 0 ? (
-                            todos.map(todo => (
+                {todos.length > 0 ? (
+                    <div className='task-container'>
+                        <button 
+                            className="toggle-button"
+                            onClick={handleToggleTaskVisibility}
+                        >
+                            <FontAwesomeIcon icon={faBars} />
+                        </button>
+                        <ul style={{ listStyleType: 'none', marginTop:'2.5em', paddingLeft:'1em' }}>
+                            {todos.map(todo => (
                                 <li key={todo.id} style={{ marginTop: '0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
                                     <label className="custom-checkbox">
                                         <input
@@ -624,16 +624,15 @@ function DayDetail() {
                                         </>
                                     )}
                                 </li>
-                            ))
-                        ) : (
-                            <p>Nothing to see here...</p>
-                        )}
-                    </ul>
-                </div>
+                            ))}
+                        </ul>
+                    </div>
+                ) : (
+                    <p>Nothing to see here...</p>
+                )}
             </div>
         </div>
     );
-    
-}
+};
 
 export default DayDetail;

@@ -182,11 +182,11 @@ body {
 
 .diary-mood {
   position: absolute;
-  bottom: 0.25em;
-  right: 0.25em;
+  bottom: 0.75em;
+  right: 0.75em;
   border: 2px solid black;
-  width: 1.2em;
-  height: 1.2em; 
+  width: 2em;
+  height: 2em; 
   border-radius: 50%; 
 }
 

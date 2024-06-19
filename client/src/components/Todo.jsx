@@ -240,7 +240,7 @@ function Todo() {
     return (
         <div>
             <h1>To-Do List</h1>
-            <h3>{selectedDate ? formatDateTime(selectedDate) : `${getMonthName(currentMonth)} ${selectedYear}`}</h3>
+            <h2>{selectedDate ? formatDateTime(selectedDate) : `${getMonthName(currentMonth)} ${selectedYear}`}</h2>
             <div id='todobutt'>
                 <button className='todo-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} /></button>
                 {showMonthViewButton ? (

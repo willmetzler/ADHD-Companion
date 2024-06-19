@@ -180,6 +180,25 @@ function Home() {
             [taskId]: ''
         }));
     };
+
+    const handleDeleteTask = async (todoId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this?");
+        if (!isConfirmed) return;
+    
+        try {
+            const response = await fetch(`/api/todos/${todoId}`, {
+                method: 'DELETE'
+            });
+    
+            if (!response.ok) {
+                throw new Error('Failed to delete task');
+            }
+    
+            setTodos(todos.filter(t => t.id !== todoId));
+        } catch (error) {
+            console.error('Error deleting task:', error);
+        }
+    };
     
     const handleTaskContentChange = (taskId, value) => {
         setEditedTaskContent(prevState => ({
@@ -248,9 +267,7 @@ function Home() {
                     onChange={handleJournalTextChange}
                     placeholder='Write your thoughts here...'
                 ></textarea>
-                <br></br>
-                <br></br>
-                <button style={{scale:'125%', marginLeft:'1em'}} onClick={handleJournalSubmit}>Submit</button>
+                <button style={{scale:'125%', marginLeft:'1em', marginTop:'0.75em'}} onClick={handleJournalSubmit}>Submit</button>
             </div>
             <div>
                 <h2>Today's Tasks...</h2>
