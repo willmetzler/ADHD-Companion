@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faAngleLeft } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faAngleLeft, faPenToSquare, faTrashCan, faBars, faBan, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 
 function Diary() {
     const [journalEntries, setJournalEntries] = useState([]);
@@ -13,6 +14,8 @@ function Diary() {
     const [moodRatings, setMoodRatings] = useState({});
     const [filteredEntries, setFilteredEntries] = useState([]);
     const [showMonthViewButton, setShowMonthViewButton] = useState(false);
+
+    const [visibleEntries, setVisibleEntries] = useState({});
 
     useEffect(() => {
         fetch('/api/journals')
@@ -191,6 +194,9 @@ function Diary() {
     };
 
     const handleDelete = async (entryId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this entry?");
+        if (!isConfirmed) return;
+    
         try {
             const response = await fetch(`/api/journals/${entryId}`, {
                 method: 'DELETE'
@@ -206,6 +212,7 @@ function Diary() {
             console.error('Error deleting entry:', error);
         }
     };
+    
 
     const handleDateChange = (event) => {
         setSelectedDate(event.target.value);
@@ -249,15 +256,21 @@ function Diary() {
         setShowMonthViewButton(false); // Hide "Month View" button
     };
 
+    const handleToggleEntryVisibility = (entryId) => {
+        setVisibleEntries(prevState => ({
+            ...prevState,
+            [entryId]: !prevState[entryId]
+        }));
+    };
+
     return (
         <div>
-            <h1>Diary</h1>
-            <h3>{selectedDate ? formatDateTime(selectedDate) : `${getMonthName(currentMonth)} ${selectedYear}`}</h3>
+            <h1>Diary: {selectedDate ? formatDateTime(selectedDate) : `${getMonthName(currentMonth)} ${selectedYear}`}</h1>
             <div className='diary-button-div'>
                 {!selectedDate && (
                     <>
                         <button className='diary-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} style={{ fontSize: '1em' }} /></button>
-                        <button className='diary-buttons' onClick={handleToday}>Current Month</button>
+                        <button className='diary-buttons' disabled={currentMonth === new Date().getMonth() && selectedYear === new Date().getFullYear()} onClick={handleToday}>Current Month</button>
                         <button className='diary-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} style={{ fontSize: '1em' }} /></button>
                     </>
                 )}
@@ -266,29 +279,49 @@ function Diary() {
                 )}
             </div>
             <br />
-            <label htmlFor="datePicker">Select Date:</label>
+            <label style={{marginLeft:'1.5em'}} htmlFor="datePicker">Select Date: </label>
             <input type="date" id="datePicker" value={selectedDate || ''} onChange={handleDateChange} />
             <br />
             <br />
             <div className='diary-container'>
                 {filteredEntries.length > 0 ? (
                     filteredEntries.map(entry => (
-                        <div className="diary-content" key={entry.id} >
+                        <div className="diary-content" key={entry.id}>
+                            <button 
+                                className="toggle-button"
+                                onClick={() => handleToggleEntryVisibility(entry.id)}
+                            >
+                                <FontAwesomeIcon icon={faBars} />
+                            </button>
                             {editMode[entry.id] ? (
                                 <div>
-                                    <input type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
+                                    <input style={{marginBottom:'0.25em'}} type="text" value={editedContent[entry.id]?.header || ''} onChange={e => handleHeaderChange(entry.id, e.target.value)} />
                                     <textarea style={{height: '10em'}} value={editedContent[entry.id]?.text || ''} onChange={e => handleTextChange(entry.id, e.target.value)} />
-                                    <button onClick={() => handleSaveEdit(entry.id)}>Save</button>
-                                    <button onClick={() => handleCancelEdit(entry.id)}>Cancel</button>
+                                    <br></br>
+                                    <button style={{scale:'120%', marginLeft:'0.5em', marginTop:'0.25em'}} onClick={() => handleSaveEdit(entry.id)}><FontAwesomeIcon icon={faFloppyDisk} /></button>
+                                    <button style={{scale:'120%', marginLeft:'1em'}} onClick={() => handleCancelEdit(entry.id)}><FontAwesomeIcon icon={faBan} /></button>
                                 </div>
                             ) : (
                                 <>
-                                    <h3>{entry.journal_header}</h3>
+                                    <h3 style={{marginTop:'1.5em'}}>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
-                                    <p>{formatDateTime(entry.created_at)}</p>
-                                    <button onClick={() => handleEdit(entry.id, entry)}>Edit</button>
-                                    &nbsp; 
-                                    <button onClick={() => handleDelete(entry.id)}>Delete</button> 
+                                    <Link to={`/day/${new Date(entry.created_at).toISOString().split('T')[0]}`}>
+                                        <p>{formatDateTime(entry.created_at)}</p>
+                                    </Link>
+                                    <button 
+                                        className={`edit-button ${visibleEntries[entry.id] ? 'visible-button' : 'hidden-button'}`} 
+                                        style={{ scale: '125%', marginLeft:'0.5em'}} 
+                                        onClick={() => handleEdit(entry.id, entry)}
+                                    >
+                                        <FontAwesomeIcon icon={faPenToSquare} />
+                                    </button>
+                                    <button 
+                                        className={`delete-button ${visibleEntries[entry.id] ? 'visible-button' : 'hidden-button'}`} 
+                                        style={{ scale: '125%', marginLeft:'1.25em', marginBottom:'0.25em'}} 
+                                        onClick={() => handleDelete(entry.id)}
+                                    >
+                                        <FontAwesomeIcon icon={faTrashCan} />
+                                    </button>
                                 </>
                             )}
                             <div className="diary-mood" style={{ backgroundColor: getMoodColor(new Date(entry.created_at).toISOString().split('T')[0]) }}></div>

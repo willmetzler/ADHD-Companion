@@ -189,10 +189,10 @@ function Medications() {
 
     return (
         <div>
-            <h1>Medications</h1>
+            <h1>Medication</h1>
             {medications.length > 0 && (
                 <div>
-                    <h3>My prescriptions</h3>
+                    <h3>My prescriptions:</h3>
                     <div>
                         {medications.map((medication, index) => (
                             <div className='my-medications' key={index}>

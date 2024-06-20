@@ -12,7 +12,7 @@ function Calendar() {
     const [journalEntries, setJournalEntries] = useState({});
     const [medications, setMedications] = useState({});
     const [isKeyVisible, setIsKeyVisible] = useState(false);
-    const [yearView, setYearView] = useState(false); // Default to month view
+    const [yearView, setYearView] = useState(false); 
     const calendarRef = useRef(null);
     const navigate = useNavigate();
 

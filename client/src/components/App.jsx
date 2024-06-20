@@ -8,7 +8,6 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
-  // Check if a user is already logged in
   useEffect(() => {
     fetch('/api/get-session')
       .then(response => {
@@ -28,7 +27,6 @@ function App() {
       });
   }, []);
 
-  // Render different content based on whether a user is logged in or not
   return (
     <div className="app-container">
       {currentUser ? (

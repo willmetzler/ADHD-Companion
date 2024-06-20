@@ -58,3 +58,14 @@ class Medications(db.Model, SerializerMixin):
     prescriber = db.Column(db.String, nullable=False)
     renew_date = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
+
+class Todos(db.Model, SerializerMixin):
+    __tablename__ = 'todos_table'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_text = db.Column(db.String, nullable=False)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    user_id = db.Column(db.Integer, db.ForeignKey('users_table.id'))
+
+    serialize_rules = ('-user.todos',)
