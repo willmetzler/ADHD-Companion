@@ -285,51 +285,71 @@ def update_medication(id):
 
 #TODOS
 
-@app.route('/api/todos', methods=['GET', 'POST'])
-def manage_todos():
+# TODOS
+
+@app.get('/api/todos')
+def get_todos():
     user_id = session.get('user_id')
     if user_id:
-        if request.method == 'GET':
-            todos = Todos.query.filter_by(user_id=user_id).all()
-            return jsonify([todo.to_dict() for todo in todos]), 200
-        elif request.method == 'POST':
-            try:
-                new_todo = Todos(
-                    task_text=request.json['task_text'],
-                    user_id=user_id
-                )
-                db.session.add(new_todo)
-                db.session.commit()
-                return jsonify(new_todo.to_dict()), 201
-            except Exception as e:
-                return jsonify({'error': str(e)}), 400
+        todos = Todos.query.filter_by(user_id=user_id).all()
+        return jsonify([todo.to_dict() for todo in todos]), 200
     else:
         return jsonify({'error': 'User not logged in'}), 401
 
-@app.route('/api/todos/<int:id>', methods=['PUT', 'DELETE'])
-def update_delete_todo(id):
+@app.post('/api/todos')
+def create_todo():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            created_at_str = request.json.get('created_at')
+            created_at = datetime.strptime(created_at_str, '%Y-%m-%dT%H:%M:%S.%fZ') if created_at_str else datetime.now()
+
+            new_todo = Todos(
+                task_text=request.json['task_text'],
+                user_id=user_id,
+                created_at=created_at
+            )
+            db.session.add(new_todo)
+            db.session.commit()
+            return jsonify(new_todo.to_dict()), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
+@app.put('/api/todos/<int:id>')
+def update_todo(id):
     user_id = session.get('user_id')
     if user_id:
         todo = Todos.query.filter_by(id=id, user_id=user_id).first()
         if not todo:
             return jsonify({'error': 'Todo not found'}), 404
-        if request.method == 'PUT':
-            try:
-                todo.task_text = request.json.get('task_text', todo.task_text)
-                todo.completed = request.json.get('completed', todo.completed)
-                db.session.commit()
-                return jsonify(todo.to_dict()), 200
-            except Exception as e:
-                return jsonify({'error': str(e)}), 400
-        elif request.method == 'DELETE':
-            try:
-                db.session.delete(todo)
-                db.session.commit()
-                return jsonify({'message': 'Todo deleted successfully'}), 200
-            except Exception as e:
-                return jsonify({'error': str(e)}), 400
+        try:
+            todo.task_text = request.json.get('task_text', todo.task_text)
+            todo.completed = request.json.get('completed', todo.completed)
+            db.session.commit()
+            return jsonify(todo.to_dict()), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'User not logged in'}), 401
+
+@app.delete('/api/todos/<int:id>')
+def delete_todo(id):
+    user_id = session.get('user_id')
+    if user_id:
+        todo = Todos.query.filter_by(id=id, user_id=user_id).first()
+        if not todo:
+            return jsonify({'error': 'Todo not found'}), 404
+        try:
+            db.session.delete(todo)
+            db.session.commit()
+            return jsonify({'message': 'Todo deleted successfully'}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
+    else:
+        return jsonify({'error': 'User not logged in'}), 401
+
 
 
 

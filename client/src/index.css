@@ -123,6 +123,12 @@ body {
   right: 0.15em;
 }
 
+.fc-event .fa-prescription-bottle {
+  position: absolute;
+  bottom: 0.25em;
+  left: 0.25em;
+}
+
 .fc-theme-standard td,
 .fc-theme-standard th {
     border-color: black;
@@ -156,12 +162,6 @@ body {
 
 .fc-daygrid-day-frame {
   background-color: inherit;
-}
-
-.fc-event .fa-prescription-bottle {
-  position: absolute;
-  bottom: 0.25em;
-  left: 0.15em;
 }
 
 .diary-button-div {

@@ -529,9 +529,9 @@ function DayDetail() {
                         </div>
                     ))
                 ) : (
-                    <p>Nothing to see here...</p>
+                    <p>Nothing here yet!</p>
                 )}
-                {!isAddingJournal && (
+                {!isAddingJournal && !isFutureDate(date.replace(/-/g, '\/')) && (
                     <button style={{ scale: '120%', marginLeft: '1.5em' }} onClick={() => setIsAddingJournal(true)}>Add New Journal Entry</button>
                 )}
                 {isAddingJournal && (
@@ -628,7 +628,7 @@ function DayDetail() {
                         </ul>
                     </div>
                 ) : (
-                    <p>Nothing to see here...</p>
+                    <></>
                 )}
             </div>
         </div>

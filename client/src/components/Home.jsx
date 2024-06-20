@@ -30,13 +30,18 @@ function Home() {
             })
             .then(data => {
                 const today = new Date().toISOString().split('T')[0];
-                const todaysTasks = data.filter(todo => todo.created_at.startsWith(today));
+                const todaysTasks = data.filter(todo => {
+                    const todoDate = new Date(todo.created_at.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    const currentDate = new Date(today.replace(/-/g, '\/')).toLocaleDateString('en-US');
+                    return todoDate === currentDate;
+                });
                 setTodos(todaysTasks);
             })
             .catch(error => {
                 console.error('Error fetching todos:', error);
             });
     };
+    
 
     const handleTaskSubmit = async () => {
         if (newTask.trim() === '') return;
@@ -283,16 +288,16 @@ function Home() {
                     &nbsp;
                     <button style={{scale:'125%', marginLeft:'0.25em'}} onClick={handleTaskSubmit}>Add</button>
                 </div>
-                <div className='task-container'>
-                    <button 
-                        className="toggle-button"
-                        onClick={handleToggleTaskVisibility}
-                    >
-                        <FontAwesomeIcon icon={faBars} />
-                    </button>
-                    <ul style={{ listStyleType: 'none', paddingLeft:'1em', marginTop:'2.5em' }}>
-                        {todos.length > 0 ? (
-                            todos.map(todo => (
+                {todos.length > 0 ? (
+                    <div className='task-container'>
+                        <button 
+                            className="toggle-button"
+                            onClick={handleToggleTaskVisibility}
+                        >
+                            <FontAwesomeIcon icon={faBars} />
+                        </button>
+                        <ul style={{ listStyleType: 'none', paddingLeft:'1em', marginTop:'2.5em' }}>
+                            {todos.map(todo => (
                                 <li key={todo.id} style={{ marginTop:'0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
                                     <label className="custom-checkbox">
                                         <input
@@ -334,16 +339,15 @@ function Home() {
                                     <br></br>
                                     <br></br>
                                 </li>
-                            ))
-                        ) : (
-                            <p>No tasks for today</p>
-                        )}
-                    </ul>
-                </div>
+                            ))}
+                        </ul>
+                    </div>
+                ) : (
+                    <p style={{marginLeft:'3em'}}>No tasks for today</p>
+                )}
             </div>
         </div>
     );
-    
-}
+};
 
-export default Home;
+export default Home

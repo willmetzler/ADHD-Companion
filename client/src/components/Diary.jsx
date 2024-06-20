@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight, faAngleLeft, faPenToSquare, faTrashCan, faBars, faBan, faFloppyDisk } from '@fortawesome/free-solid-svg-icons';
 
@@ -15,7 +16,6 @@ function Diary() {
     const [showMonthViewButton, setShowMonthViewButton] = useState(false);
 
     const [visibleEntries, setVisibleEntries] = useState({});
-
 
     useEffect(() => {
         fetch('/api/journals')
@@ -266,7 +266,7 @@ function Diary() {
                 {!selectedDate && (
                     <>
                         <button className='diary-buttons' onClick={handlePrevMonth}><FontAwesomeIcon icon={faAngleLeft} style={{ fontSize: '1em' }} /></button>
-                        <button className='diary-buttons' onClick={handleToday}>Current Month</button>
+                        <button className='diary-buttons' disabled={currentMonth === new Date().getMonth() && selectedYear === new Date().getFullYear()} onClick={handleToday}>Current Month</button>
                         <button className='diary-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} style={{ fontSize: '1em' }} /></button>
                     </>
                 )}
@@ -301,7 +301,9 @@ function Diary() {
                                 <>
                                     <h3>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
-                                    <p>{formatDateTime(entry.created_at)}</p>
+                                    <Link to={`/day/${new Date(entry.created_at).toISOString().split('T')[0]}`}>
+                                        <p>{formatDateTime(entry.created_at)}</p>
+                                    </Link>
                                     <button 
                                         className={`edit-button ${visibleEntries[entry.id] ? 'visible-button' : 'hidden-button'}`} 
                                         style={{ scale: '125%', marginLeft:'0.5em'}} 
@@ -327,7 +329,6 @@ function Diary() {
             </div>
         </div>
     );
-    
 }
 
 export default Diary;

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleRight, faAngleLeft,faPenToSquare, faTrashCan, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faAngleRight, faAngleLeft, faPenToSquare, faTrashCan, faBars, faForward } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom'; // Add this import
 
 function Todo() {
     const [todos, setTodos] = useState([]);
@@ -12,8 +14,7 @@ function Todo() {
     const [taskEditMode, setTaskEditMode] = useState({});
     const [editedTaskContent, setEditedTaskContent] = useState({});
     const [visibleTasks, setVisibleTasks] = useState({});
-
-
+    const navigate = useNavigate(); // Add useNavigate hook
 
     useEffect(() => {
         fetchTodos();
@@ -156,6 +157,28 @@ function Todo() {
         }
     };    
 
+    const handleMoveToToday = async (todoId) => {
+        try {
+            const response = await fetch(`/api/todos/${todoId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ created_at: new Date().toISOString().split('T')[0] })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to move task to today');
+            }
+
+            setTodos(todos.map(t => 
+                t.id === todoId ? { ...t, created_at: new Date().toISOString().split('T')[0] } : t
+            ));
+        } catch (error) {
+            console.error('Error moving task to today:', error);
+        }
+    };
+
     const getMonthName = (monthIndex) => {
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         return months[monthIndex];
@@ -173,7 +196,7 @@ function Todo() {
     };
 
     const groupedTodos = todos.reduce((acc, todo) => {
-        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toLocaleDateString('en-US');
+        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toISOString().split('T')[0];
         if (!acc[localDate]) {
             acc[localDate] = [];
         }
@@ -235,8 +258,12 @@ function Todo() {
             [date]: !prevState[date]
         }));
     };
-    
 
+    const isToday = (date) => {
+        const today = new Date().toISOString().split('T')[0];
+        return date === today;
+    };
+    
     return (
         <div>
             <h1>To-Do List</h1>
@@ -246,7 +273,7 @@ function Todo() {
                 {showMonthViewButton ? (
                     <button className='todo-buttons' onClick={handleToggleMonthView}>Month View</button>
                 ) : (
-                    <button className='todo-buttons'onClick={handleToday}>Current Month</button>
+                    <button disabled={currentMonth === new Date().getMonth() && selectedYear === new Date().getFullYear()} className='todo-buttons'onClick={handleToday}>Current Month</button>
                 )}
                 <button className='todo-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} /></button>
             </div>
@@ -276,7 +303,8 @@ function Todo() {
                         >
                             <FontAwesomeIcon icon={faBars} />
                         </button>
-                        <p style={{ marginLeft: '1em' }}>{formatDateTime(date)}</p>
+                        <br></br>
+                        <Link to={`/day/${date}`} style={{ marginLeft: '1em', textDecoration: 'underline' }}>{formatDateTime(date)}</Link>
                         <ul style={{ listStyleType: 'none', paddingLeft: '1em' }}>
                             {todos.map(todo => (
                                 <li key={todo.id} style={{ marginTop: '0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
@@ -327,6 +355,15 @@ function Todo() {
                                             >
                                                 <FontAwesomeIcon icon={faTrashCan} />
                                             </button>
+                                            {!isToday(date) && (
+                                                <button 
+                                                    className={`move-button ${visibleTasks[date] ? 'visible-button' : 'hidden-button'}`} 
+                                                    style={{ scale: '85%'}} 
+                                                    onClick={() => handleMoveToToday(todo.id)}
+                                                >
+                                                    <FontAwesomeIcon icon={faForward} />
+                                                </button>
+                                            )}
                                             <br></br>
                                             <br></br>
                                         </>
@@ -337,7 +374,7 @@ function Todo() {
                     </div>
                 ))
             ) : (
-                <p>No tasks for this month</p>
+                <p style={{marginLeft:'2.5em'}}>No tasks for this month</p>
             )}
         </div>
     );

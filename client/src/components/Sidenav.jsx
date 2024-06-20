@@ -1,13 +1,13 @@
+import React from 'react';
 import SideNav, { Toggle, Nav, NavItem, NavIcon, NavText } from '@trendmicro/react-sidenav';
 import '@trendmicro/react-sidenav/dist/react-sidenav.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faUser, faCalendar, faBook, faPills, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
-
+import { faHome, faUser, faCalendar, faBook, faPills, faCheck} from '@fortawesome/free-solid-svg-icons';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Sidenav() {
-
     const navigate = useNavigate();
+    const location = useLocation(); // Get the current location
 
     const sideNavStyles = {
         backgroundColor: '#2596be',
@@ -19,18 +19,27 @@ function Sidenav() {
     };
     const textStyle = {
         color: '#fff'
-    }
+    };
+
+    const getDefaultSelected = () => {
+        if (location.pathname.includes('/day/')) {
+            return ''; // No highlight when on a DayDetail page
+        }
+        const path = location.pathname.replace('/', '');
+        return path || 'home';
+    };
 
     return (
         <SideNav
-        style={sideNavStyles}
-        onSelect={selected=> {
-            console.log(selected)
-            navigate('/' + selected)
-        }}
+            style={sideNavStyles}
+            onSelect={selected => {
+                console.log(selected);
+                navigate('/' + selected);
+            }}
+            defaultSelected={getDefaultSelected()} // Set default selected item dynamically
         >
             <SideNav.Toggle />
-            <SideNav.Nav defaultSelected='home'>
+            <SideNav.Nav>
                 <NavItem eventKey='home'>
                     <NavIcon>
                         <FontAwesomeIcon icon={faHome} style={iconStyle} />
@@ -69,7 +78,7 @@ function Sidenav() {
                 </NavItem>
             </SideNav.Nav>
         </SideNav>
-    )
+    );
 }
 
 export default Sidenav;
