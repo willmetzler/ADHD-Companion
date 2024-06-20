@@ -31,8 +31,9 @@ function DayDetail() {
             const response = await fetch('/api/journals');
             if (response.ok) {
                 const data = await response.json();
+                const timezoneOffset = new Date().getTimezoneOffset() * 60000;
                 const filteredEntries = data.filter(entry => {
-                    const entryDate = new Date(entry.created_at.replace(/-/g, '\/')).toISOString().split('T')[0];
+                    const entryDate = new Date(new Date(entry.created_at).getTime() - timezoneOffset).toISOString().split('T')[0];
                     return entryDate === date;
                 });
                 setJournalEntries(filteredEntries);
@@ -120,7 +121,7 @@ function DayDetail() {
                 journal_text: entry.journal_text
             }
         }));
-    };
+    };    
 
     const handleSaveEdit = async (entryId) => {
         try {
@@ -134,11 +135,11 @@ function DayDetail() {
                     journal_text: editedContent[entryId].journal_text
                 })
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to save edited entry');
             }
-
+    
             const updatedEntries = [...journalEntries];
             const updatedEntryIndex = updatedEntries.findIndex(entry => entry.id === entryId);
             if (updatedEntryIndex !== -1) {
@@ -146,7 +147,7 @@ function DayDetail() {
                 updatedEntries[updatedEntryIndex].journal_text = editedContent[entryId].journal_text;
                 setJournalEntries(updatedEntries);
             }
-
+    
             setEditMode(prevState => ({
                 ...prevState,
                 [entryId]: false
@@ -155,6 +156,7 @@ function DayDetail() {
             console.error('Error saving edited entry:', error);
         }
     };
+    
 
     const handleCancelEdit = (entryId) => {
         setEditMode(prevState => ({
@@ -188,24 +190,25 @@ function DayDetail() {
     };
 
     const handleDelete = async (entryId) => {
-        const isConfirmed = window.confirm("Are you sure you want to delete this?");
+        const isConfirmed = window.confirm("Are you sure you want to delete this entry?");
         if (!isConfirmed) return;
-
+    
         try {
             const response = await fetch(`/api/journals/${entryId}`, {
                 method: 'DELETE'
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to delete entry');
             }
-
+    
             const updatedEntries = journalEntries.filter(entry => entry.id !== entryId);
             setJournalEntries(updatedEntries);
         } catch (error) {
             console.error('Error deleting entry:', error);
         }
     };
+    
 
     const handleNewJournalSubmit = async () => {
         try {

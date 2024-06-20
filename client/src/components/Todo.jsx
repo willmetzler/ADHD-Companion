@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleRight, faAngleLeft, faPenToSquare, faTrashCan, faBars, faForward } from '@fortawesome/free-solid-svg-icons';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom'; // Add this import
 
 function Todo() {
     const [todos, setTodos] = useState([]);
@@ -14,10 +12,6 @@ function Todo() {
     const [taskEditMode, setTaskEditMode] = useState({});
     const [editedTaskContent, setEditedTaskContent] = useState({});
     const [visibleTasks, setVisibleTasks] = useState({});
-    const navigate = useNavigate(); // Add useNavigate hook
-
-    const [, setForceUpdate] = useState(0);
-
 
     useEffect(() => {
         fetchTodos();
@@ -33,19 +27,12 @@ function Todo() {
                 }
             })
             .then(data => {
-                const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-                const adjustedTodos = data.map(todo => {
-                    const adjustedDate = new Date(new Date(todo.created_at) - timezoneOffset).toISOString().split('T')[0];
-                    return { ...todo, adjustedDate };
-                });
-                setTodos(adjustedTodos);
+                setTodos(data);
             })
             .catch(error => {
                 console.error('Error fetching todos:', error);
             });
     };
-    
-    
 
     const handleTaskSubmit = async () => {
         if (newTask.trim() === '') return;
@@ -57,23 +44,18 @@ function Todo() {
                 },
                 body: JSON.stringify({ task_text: newTask })
             });
-    
+
             if (!response.ok) {
                 throw new Error('Failed to add task');
             }
-    
+
             const newTodo = await response.json();
-            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
-            const adjustedDate = new Date(new Date(newTodo.created_at) - timezoneOffset).toISOString().split('T')[0];
-            const adjustedNewTodo = { ...newTodo, adjustedDate };
-    
-            setTodos([...todos, adjustedNewTodo]);
+            setTodos([...todos, newTodo]);
             setNewTask('');
         } catch (error) {
             console.error('Error adding task:', error);
         }
     };
-    
 
     const handleToggleComplete = async (todoId) => {
         const todo = todos.find(t => t.id === todoId);
@@ -173,46 +155,26 @@ function Todo() {
     };    
 
     const handleMoveToToday = async (todoId) => {
-        console.log(`Attempting to move task ${todoId} to today`);
-    
         try {
-            const today = new Date();
-            const adjustedDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString();
-            console.log(`Adjusted date: ${adjustedDate}`);
-    
             const response = await fetch(`/api/todos/${todoId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ created_at: adjustedDate })
+                body: JSON.stringify({ created_at: new Date().toISOString().split('T')[0] })
             });
-    
+
             if (!response.ok) {
                 throw new Error('Failed to move task to today');
             }
-    
-            const updatedTodo = await response.json();
-            console.log(`Updated todo: ${JSON.stringify(updatedTodo)}`);
-    
-            setTodos(prevTodos => prevTodos.map(todo => 
-                todo.id === todoId ? { ...todo, created_at: adjustedDate, adjustedDate: adjustedDate.split('T')[0] } : todo
+
+            setTodos(todos.map(t => 
+                t.id === todoId ? { ...t, created_at: new Date().toISOString().split('T')[0] } : t
             ));
-    
-            console.log('Task moved successfully, refetching todos');
-            fetchTodos();  // Ensure the state is re-fetched to reflect the changes
         } catch (error) {
             console.error('Error moving task to today:', error);
         }
     };
-    
-    
-    
-    const isToday = (date) => {
-        const today = new Date();
-        const adjustedToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
-        return date === adjustedToday;
-    };     
 
     const getMonthName = (monthIndex) => {
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -231,14 +193,14 @@ function Todo() {
     };
 
     const groupedTodos = todos.reduce((acc, todo) => {
-        const localDate = todo.adjustedDate;
+        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toLocaleDateString('en-US');
         if (!acc[localDate]) {
             acc[localDate] = [];
         }
         acc[localDate].push(todo);
         return acc;
     }, {});
-    
+
     const filteredTodos = Object.entries(groupedTodos).filter(([date]) => {
         const todoDate = new Date(date.replace(/-/g, '/'));
         const todoYear = todoDate.getFullYear();
@@ -248,7 +210,6 @@ function Todo() {
         }
         return todoYear === selectedYear && todoMonth === currentMonth;
     });
-    
 
     const sortedTodos = filteredTodos.sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA));
 
@@ -294,6 +255,11 @@ function Todo() {
             [date]: !prevState[date]
         }));
     };
+
+    const isToday = (date) => {
+        const today = new Date().toISOString().split('T')[0];
+        return date === today;
+    };
     
     return (
         <div>
@@ -304,7 +270,7 @@ function Todo() {
                 {showMonthViewButton ? (
                     <button className='todo-buttons' onClick={handleToggleMonthView}>Month View</button>
                 ) : (
-                    <button disabled={currentMonth === new Date().getMonth() && selectedYear === new Date().getFullYear()} className='todo-buttons'onClick={handleToday}>Current Month</button>
+                    <button className='todo-buttons'onClick={handleToday}>Current Month</button>
                 )}
                 <button className='todo-buttons' onClick={handleNextMonth}><FontAwesomeIcon icon={faAngleRight} /></button>
             </div>
@@ -334,8 +300,7 @@ function Todo() {
                         >
                             <FontAwesomeIcon icon={faBars} />
                         </button>
-                        <br></br>
-                        <Link to={`/day/${date}`} style={{ marginLeft: '1em', textDecoration: 'underline' }}>{formatDateTime(date)}</Link>
+                        <p style={{ marginLeft: '1em' }}>{formatDateTime(date)}</p>
                         <ul style={{ listStyleType: 'none', paddingLeft: '1em' }}>
                             {todos.map(todo => (
                                 <li key={todo.id} style={{ marginTop: '0.25em', textDecoration: todo.completed ? 'line-through' : 'none' }}>
@@ -405,7 +370,7 @@ function Todo() {
                     </div>
                 ))
             ) : (
-                <p style={{marginLeft:'2.5em'}}>No tasks for this month</p>
+                <p>No tasks for this month</p>
             )}
         </div>
     );

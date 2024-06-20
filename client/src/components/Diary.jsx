@@ -194,6 +194,9 @@ function Diary() {
     };
 
     const handleDelete = async (entryId) => {
+        const isConfirmed = window.confirm("Are you sure you want to delete this entry?");
+        if (!isConfirmed) return;
+    
         try {
             const response = await fetch(`/api/journals/${entryId}`, {
                 method: 'DELETE'
@@ -209,6 +212,7 @@ function Diary() {
             console.error('Error deleting entry:', error);
         }
     };
+    
 
     const handleDateChange = (event) => {
         setSelectedDate(event.target.value);
@@ -299,7 +303,7 @@ function Diary() {
                                 </div>
                             ) : (
                                 <>
-                                    <h3>{entry.journal_header}</h3>
+                                    <h3 style={{marginTop:'1.5em'}}>{entry.journal_header}</h3>
                                     <p>{entry.journal_text}</p>
                                     <Link to={`/day/${new Date(entry.created_at).toISOString().split('T')[0]}`}>
                                         <p>{formatDateTime(entry.created_at)}</p>
