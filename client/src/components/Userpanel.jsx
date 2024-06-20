@@ -4,6 +4,9 @@ import Login from "./Login";
 function Userpanel({ setCurrentUser }) { 
     return (
         <div>
+            <br></br>
+            <br></br>
+            <br></br>
             <Signup setCurrentUser={setCurrentUser} /> 
             <br></br>
             <br></br>
