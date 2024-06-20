@@ -16,6 +16,9 @@ function Todo() {
     const [visibleTasks, setVisibleTasks] = useState({});
     const navigate = useNavigate(); // Add useNavigate hook
 
+    const [, setForceUpdate] = useState(0);
+
+
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -30,12 +33,19 @@ function Todo() {
                 }
             })
             .then(data => {
-                setTodos(data);
+                const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+                const adjustedTodos = data.map(todo => {
+                    const adjustedDate = new Date(new Date(todo.created_at) - timezoneOffset).toISOString().split('T')[0];
+                    return { ...todo, adjustedDate };
+                });
+                setTodos(adjustedTodos);
             })
             .catch(error => {
                 console.error('Error fetching todos:', error);
             });
     };
+    
+    
 
     const handleTaskSubmit = async () => {
         if (newTask.trim() === '') return;
@@ -47,18 +57,23 @@ function Todo() {
                 },
                 body: JSON.stringify({ task_text: newTask })
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to add task');
             }
-
+    
             const newTodo = await response.json();
-            setTodos([...todos, newTodo]);
+            const timezoneOffset = new Date().getTimezoneOffset() * 60000;
+            const adjustedDate = new Date(new Date(newTodo.created_at) - timezoneOffset).toISOString().split('T')[0];
+            const adjustedNewTodo = { ...newTodo, adjustedDate };
+    
+            setTodos([...todos, adjustedNewTodo]);
             setNewTask('');
         } catch (error) {
             console.error('Error adding task:', error);
         }
     };
+    
 
     const handleToggleComplete = async (todoId) => {
         const todo = todos.find(t => t.id === todoId);
@@ -158,26 +173,46 @@ function Todo() {
     };    
 
     const handleMoveToToday = async (todoId) => {
+        console.log(`Attempting to move task ${todoId} to today`);
+    
         try {
+            const today = new Date();
+            const adjustedDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString();
+            console.log(`Adjusted date: ${adjustedDate}`);
+    
             const response = await fetch(`/api/todos/${todoId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ created_at: new Date().toISOString().split('T')[0] })
+                body: JSON.stringify({ created_at: adjustedDate })
             });
-
+    
             if (!response.ok) {
                 throw new Error('Failed to move task to today');
             }
-
-            setTodos(todos.map(t => 
-                t.id === todoId ? { ...t, created_at: new Date().toISOString().split('T')[0] } : t
+    
+            const updatedTodo = await response.json();
+            console.log(`Updated todo: ${JSON.stringify(updatedTodo)}`);
+    
+            setTodos(prevTodos => prevTodos.map(todo => 
+                todo.id === todoId ? { ...todo, created_at: adjustedDate, adjustedDate: adjustedDate.split('T')[0] } : todo
             ));
+    
+            console.log('Task moved successfully, refetching todos');
+            fetchTodos();  // Ensure the state is re-fetched to reflect the changes
         } catch (error) {
             console.error('Error moving task to today:', error);
         }
     };
+    
+    
+    
+    const isToday = (date) => {
+        const today = new Date();
+        const adjustedToday = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+        return date === adjustedToday;
+    };     
 
     const getMonthName = (monthIndex) => {
         const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -196,14 +231,14 @@ function Todo() {
     };
 
     const groupedTodos = todos.reduce((acc, todo) => {
-        const localDate = new Date(todo.created_at.replace(/-/g, '/')).toISOString().split('T')[0];
+        const localDate = todo.adjustedDate;
         if (!acc[localDate]) {
             acc[localDate] = [];
         }
         acc[localDate].push(todo);
         return acc;
     }, {});
-
+    
     const filteredTodos = Object.entries(groupedTodos).filter(([date]) => {
         const todoDate = new Date(date.replace(/-/g, '/'));
         const todoYear = todoDate.getFullYear();
@@ -213,6 +248,7 @@ function Todo() {
         }
         return todoYear === selectedYear && todoMonth === currentMonth;
     });
+    
 
     const sortedTodos = filteredTodos.sort(([dateA], [dateB]) => new Date(dateB) - new Date(dateA));
 
@@ -257,11 +293,6 @@ function Todo() {
             ...prevState,
             [date]: !prevState[date]
         }));
-    };
-
-    const isToday = (date) => {
-        const today = new Date().toISOString().split('T')[0];
-        return date === today;
     };
     
     return (

@@ -29,11 +29,12 @@ function Home() {
                 }
             })
             .then(data => {
-                const today = new Date().toISOString().split('T')[0];
+                const today = new Date();
+                const timezoneOffset = today.getTimezoneOffset() * 60000;
+                const localISOTime = new Date(today - timezoneOffset).toISOString().split('T')[0];
                 const todaysTasks = data.filter(todo => {
-                    const todoDate = new Date(todo.created_at.replace(/-/g, '\/')).toLocaleDateString('en-US');
-                    const currentDate = new Date(today.replace(/-/g, '\/')).toLocaleDateString('en-US');
-                    return todoDate === currentDate;
+                    const todoDate = new Date(new Date(todo.created_at) - timezoneOffset).toISOString().split('T')[0];
+                    return todoDate === localISOTime;
                 });
                 setTodos(todaysTasks);
             })
@@ -41,6 +42,8 @@ function Home() {
                 console.error('Error fetching todos:', error);
             });
     };
+    
+
     
 
     const handleTaskSubmit = async () => {

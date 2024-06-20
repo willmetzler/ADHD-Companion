@@ -327,12 +327,17 @@ def update_todo(id):
         try:
             todo.task_text = request.json.get('task_text', todo.task_text)
             todo.completed = request.json.get('completed', todo.completed)
+            created_at_str = request.json.get('created_at')
+            if created_at_str:
+                created_at = datetime.fromisoformat(created_at_str.replace('Z', '+00:00'))
+                todo.created_at = created_at
             db.session.commit()
             return jsonify(todo.to_dict()), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 400
     else:
         return jsonify({'error': 'User not logged in'}), 401
+
 
 @app.delete('/api/todos/<int:id>')
 def delete_todo(id):
