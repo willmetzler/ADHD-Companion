@@ -8,12 +8,19 @@ Medication tracking
 
 ## Running
 cd server
+
 flask db init
+
 flask db migrate
+
 flask db upgrade
+
 python app.py
 
-In another terminal
+In another terminal:
+
 cd client
+
 npm install
+
 npm run dev
