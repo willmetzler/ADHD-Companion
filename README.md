@@ -2,8 +2,11 @@
 
 ## Features
 Mood rating with calendar view
+
 Journal entries & diary
+
 To-do lists
+
 Medication tracking
 
 ## Running
