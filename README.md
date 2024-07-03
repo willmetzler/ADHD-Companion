@@ -16,17 +16,16 @@ The ADHD Companion App is a web application designed to help individuals manage 
 
 # Installation
 
-## Prerequisites
+In the project terminal run these commands:
 
-Node.js and npm installed on your machine.
-
-Python installed on your machine.
-
-A PostgreSQL database.
+```
+pipenv install
+pipenv shell
+cd server
+```
 
 ## Run Database Migrations
 ```
-cd server
 flask db init
 flask db migrate
 flask db upgrade
