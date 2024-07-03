@@ -25,25 +25,23 @@ Python installed on your machine.
 A PostgreSQL database.
 
 ## Run Database Migrations
-
+```
+cd server
 flask db init
-
 flask db migrate
-
 flask db upgrade
-
+```
 ## Run the Backend Server
-
+```
 python app.py
-
+```
 ## Frontend Setup
-
+```
+cd ..
 cd client
-
 npm install
-
 npm run dev
-
+```
 
 # Dependencies
 
